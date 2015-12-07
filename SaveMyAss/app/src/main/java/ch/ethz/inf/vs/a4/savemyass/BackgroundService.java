@@ -2,16 +2,20 @@ package ch.ethz.inf.vs.a4.savemyass;
 
 import android.app.Service;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Binder;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 import java.util.LinkedList;
 import java.util.List;
 
+import ch.ethz.inf.vs.a4.savemyass.Centralized.Config;
 import ch.ethz.inf.vs.a4.savemyass.Centralized.GCMReceiver;
 import ch.ethz.inf.vs.a4.savemyass.Centralized.GCMSender;
 import ch.ethz.inf.vs.a4.savemyass.Centralized.LocationTracker;
+import ch.ethz.inf.vs.a4.savemyass.Structure.InfoBundle;
 import ch.ethz.inf.vs.a4.savemyass.Structure.ServiceDestroyReceiver;
 import ch.ethz.inf.vs.a4.savemyass.Structure.SimpleAlarmDistributor;
 
@@ -29,10 +33,11 @@ public class BackgroundService extends Service{
     public String TAG = "###BackgroundService";
 
     public String userID;
+    public SimpleAlarmDistributor alarmDistributor, uiDistributor;
 
     private final IBinder binder = new LocalBinder();
-
     private List<ServiceDestroyReceiver> serviceDestroyReceivers;
+    private LocationTracker locationTracker;
 
     /**
      * Class for clients to access.  Because we know this service always runs in the same process as
@@ -48,22 +53,34 @@ public class BackgroundService extends Service{
     public void onCreate() {
         super.onCreate();
 
-        // todo: get the userID!!!!
-        // -> probably do this in the main activity at first startup and put it in shared prefs
-        // this is just a dummy userID that changes every time the service gets created.
-        userID = "t"+System.currentTimeMillis();
+        //todo: for the peer-to-peer approach: when you need the userID better use shared preferences
+        //directly then taking it form here, make sure to also implement the change listener
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        userID = sp.getString(Config.SHARED_PREFS_USER_ID, "");
 
         Log.d(TAG, "service created");
 
         // create the distributors
-        SimpleAlarmDistributor uiDistributor = new SimpleAlarmDistributor();
-        SimpleAlarmDistributor alarmDistributor = new SimpleAlarmDistributor();
+        uiDistributor = new SimpleAlarmDistributor();
+        alarmDistributor = new SimpleAlarmDistributor();
 
         // set up the centralized stuff
+        locationTracker = new LocationTracker(getApplicationContext());
         GCMReceiver gcmReceiver = new GCMReceiver(uiDistributor);
-        GCMSender gcmSender = new GCMSender(getApplicationContext(), userID);
+        GCMSender gcmSender = new GCMSender(getApplicationContext(), locationTracker);
+        alarmDistributor.register(gcmSender);
+
+        // set up service destroy receivers
         serviceDestroyReceivers = new LinkedList<>();
-        serviceDestroyReceivers.add(new LocationTracker(getApplicationContext(), userID));
+        serviceDestroyReceivers.add(locationTracker);
+    }
+
+    /**
+     * creates info bundle and starts alarm
+     */
+    public void triggerAlarm() {
+        InfoBundle info = new InfoBundle(userID, locationTracker.loggedLocation);
+        alarmDistributor.distributeToSend(info);
     }
 
     @Override

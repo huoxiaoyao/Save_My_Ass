@@ -1,19 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="ch.ethz.inf.vs.a4.savemyass" >
+    package="ch.ethz.inf.vs.a4.savemyass">
 
+    <!-- Location service and Internet availability -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
     <uses-permission android:name="android.permission.USE_CREDENTIALS" />
+    <!-- GCM stuff -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
 
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme" >
-        <activity android:name=".MainActivity" >
+        android:theme="@style/AppTheme">
+        <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -24,8 +29,20 @@
         <service
             android:name=".BackgroundService"
             android:enabled="true"
-            android:exported="true" >
+            android:exported="true" />
+        <service
+            android:name=".Centralized.GCMInstanceIDListener"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.android.gms.iid.InstanceID" />
+            </intent-filter>
         </service>
+        <service
+            android:name=".Centralized.GCMRegistrationIntentService"
+            android:exported="false" />
+
+        <activity android:name=".HelpRequest" />
+        <activity android:name=".HelpOthers"></activity>
     </application>
 
 </manifest>

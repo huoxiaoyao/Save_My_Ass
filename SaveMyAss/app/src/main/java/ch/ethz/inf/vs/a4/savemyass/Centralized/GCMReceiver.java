@@ -11,10 +11,10 @@ import ch.ethz.inf.vs.a4.savemyass.Structure.InfoBundle;
 /**
  * Created by jan on 30.11.15.
  *
- * receives the google cloud message and contains logic when and trigger the alarm
+ * receives the google cloud message and contains logic when to trigger the alarm
  */
 //todo: implement logic
-public class GCMReceiver extends GcmListenerService{
+public class GCMReceiver extends GcmListenerService {
 
     private AlarmDistributor uiNotifier;
     protected static String TAG = "###GCMReceiver";
@@ -36,7 +36,7 @@ public class GCMReceiver extends GcmListenerService{
         Log.d(TAG, "From: " + from);
         Log.d(TAG, "Message: " + message);
         // todo: in case we need parts of the message for the UI part, do that here
-        InfoBundle info = new InfoBundle();
+        InfoBundle info = new InfoBundle("impelement this!", null);
         uiNotifier.distributeToSend(info);
     }
 }

@@ -4,10 +4,12 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.location.Location;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.firebase.client.Firebase;
@@ -27,7 +29,8 @@ import ch.ethz.inf.vs.a4.savemyass.Structure.ServiceDestroyReceiver;
  * tracks the current location and updates in firebase if necessary
  */
 public class LocationTracker implements LocationListener, GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener, ServiceDestroyReceiver{
+        GoogleApiClient.OnConnectionFailedListener, ServiceDestroyReceiver,
+        SharedPreferences.OnSharedPreferenceChangeListener{
 
     private Context ctx;
     private ConnectivityManager cm;
@@ -40,13 +43,18 @@ public class LocationTracker implements LocationListener, GoogleApiClient.Connec
 
     // last location sent to the firebase
     protected Location lastSentLocation;
+    public Location loggedLocation;
 
     private static final String TAG = "###LocationTracker";
 
     // constructor
-    public LocationTracker(Context ctx, String userID){
+    public LocationTracker(Context ctx){
         this.ctx = ctx;
-        this.userID = userID;
+
+        // get userID and register listener for userID change
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(ctx);
+        this.userID = sharedPreferences.getString(Config.SHARED_PREFS_USER_ID, "");
+
         // set firebase android context
         Firebase.setAndroidContext(ctx);
 
@@ -68,8 +76,8 @@ public class LocationTracker implements LocationListener, GoogleApiClient.Connec
 
     private LocationRequest createLocationRequest() {
         LocationRequest mLocationRequest = new LocationRequest();
-        mLocationRequest.setInterval(Config.LOCATION_UPDATE_PERIOD);
-        mLocationRequest.setFastestInterval(Config.LOCATION_UPDATE_PERIOD_MIN);
+        mLocationRequest.setInterval(Config.LOCATION_TRACKER_UPDATE_PERIOD);
+        mLocationRequest.setFastestInterval(Config.LOCATION_TRACKER_UPDATE_PERIOD_MIN);
         mLocationRequest.setPriority(LocationRequest.PRIORITY_LOW_POWER);
         return mLocationRequest;
     }
@@ -99,8 +107,8 @@ public class LocationTracker implements LocationListener, GoogleApiClient.Connec
      */
     private void checkLocationAndUpdate(Location lastLocation) {
         Log.d(TAG, "checking if updating location in firebase is needed");
-        Location loggedLocation;
         if (lastLocation != null) {
+            Log.d(TAG, "loc: "+lastLocation.toString());
             loggedLocation = lastLocation;
             if (lastSentLocation == null) {
                 checkInternetAndSend(loggedLocation);
@@ -137,6 +145,15 @@ public class LocationTracker implements LocationListener, GoogleApiClient.Connec
         if (mGoogleApiClient.isConnected()) {
             mGoogleApiClient.disconnect();
         }
+    }
+
+    /**
+     * updates the user id when it's changed in the preferences for some reason...
+     */
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        if(key.equals(Config.SHARED_PREFS_USER_ID))
+            userID = sharedPreferences.getString(Config.SHARED_PREFS_USER_ID, "");
     }
 
     /**

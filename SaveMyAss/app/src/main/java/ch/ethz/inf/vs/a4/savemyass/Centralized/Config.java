@@ -11,12 +11,19 @@ public class Config {
     public static String FIREBASE_LOCATION_TRACKING = FIREBASE_BASE_ADDRESS+"locations/";
 
     // google cloud messaging stuff
-    public static String GCM_REGISTER = "https://save-my-ass.appspot.com/_ah/api/savemyass/v1/register";
-    public static String GCM_START_ALARM = "https://save-my-ass.appspot.com/_ah/api/savemyass/v1/alarm";
+    public static String GCM_REGISTER_URL = "https://save-my-ass.appspot.com/_ah/api/savemyass/v1/register";
+    public static String GCM_START_ALARM_URL = "https://save-my-ass.appspot.com/_ah/api/savemyass/v1/alarm";
+    public static String REGISTRATION_COMPLETE_BROADCAST = "registrationComplete";
+
+    // shared preferences
+    public static String SENT_TOKEN_TO_SERVER = "sentTokenToServer";
+    public static String SHARED_PREFS_USER_ID = "gcm_user_id";
+    public static String SHARED_PREFS_SALT = "gcm_salt";
 
     // time and distance thresholds
     // todo: replace those with reasonable values!
-    public static int LOCATION_UPDATE_PERIOD = 20*1000; //in ms -> maximum time between two location updates
-    public static int LOCATION_UPDATE_PERIOD_MIN = 10*1000; //in ms -> we won't get more location updates than that
-    public static float LOCATION_TRACKER_SEND_DISTANCE_THRESHOLD = 1000; //in m
+    public static int LOCATION_TRACKER_UPDATE_PERIOD = 20*1000; //in ms -> maximum time between two location updates
+    public static int LOCATION_TRACKER_UPDATE_PERIOD_MIN = 10*1000; //in ms -> we won't get more location updates than that
+    public static float LOCATION_TRACKER_SEND_DISTANCE_THRESHOLD = 100; //in m
+    public static int ALARM_DISTANCE_THRESHOLD = 5*1000; //in m
 }
