@@ -38,7 +38,7 @@ public class GCMSender implements AlarmSender, ResponseListener {
         InfoBundle info = new InfoBundle(userID, locationTracker.loggedLocation);
         JSONObject request = info.toJSON();
         if(request == null){
-            Toast toast = Toast.makeText(ctx, "Location is null! Running on a device without google play services???", Toast.LENGTH_SHORT);
+            Toast toast = Toast.makeText(ctx, "Location is null! Running on a device without google play services?", Toast.LENGTH_SHORT);
             toast.show();
             return;
         }

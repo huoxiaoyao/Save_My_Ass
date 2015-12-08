@@ -58,6 +58,11 @@ public class BackgroundService extends Service{
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         userID = sp.getString(Config.SHARED_PREFS_USER_ID, "");
 
+        if(!sp.getBoolean(Config.SENT_TOKEN_TO_SERVER, false)){
+            //stopSelf();
+            Log.d(TAG, "userID is not known yet!");
+        }
+
         Log.d(TAG, "service created");
 
         // create the distributors
