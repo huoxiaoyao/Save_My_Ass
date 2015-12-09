@@ -19,6 +19,11 @@ public class Config {
     public static String SENT_TOKEN_TO_SERVER = "sentTokenToServer";
     public static String SHARED_PREFS_USER_ID = "gcm_user_id";
     public static String SHARED_PREFS_SALT = "gcm_salt";
+    public static String SHARED_PREFS_FIREBASE_AUTH = "firebase_auth";
+
+    // Intent extra strings
+    public static String INTENT_NEW_TOKEN = "newToken";
+    public static String INTENT_FIREBASE_ALARM_URL = "firebaseAlarmUrl";
 
     // time and distance thresholds
     // todo: replace those with reasonable values!

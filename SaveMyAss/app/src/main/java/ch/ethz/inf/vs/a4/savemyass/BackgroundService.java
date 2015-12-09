@@ -71,7 +71,11 @@ public class BackgroundService extends Service{
 
         // set up the centralized stuff
         locationTracker = new LocationTracker(getApplicationContext());
-        GCMReceiver gcmReceiver = new GCMReceiver(uiDistributor);
+        // todo: pass the ui Distributor to this receiver! -> really???
+        //GCMReceiver gcmReceiver = new GCMReceiver(uiDistributor);
+        Intent i = new Intent(getApplicationContext(), GCMReceiver.class);
+//        startService(i);
+
         GCMSender gcmSender = new GCMSender(getApplicationContext(), locationTracker);
         alarmDistributor.register(gcmSender);
 

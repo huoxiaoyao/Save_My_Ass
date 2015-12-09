@@ -10,9 +10,12 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.provider.Settings;
 import android.util.Log;
 
+import com.firebase.client.AuthData;
 import com.firebase.client.Firebase;
+import com.firebase.client.FirebaseError;
 import com.firebase.geofire.GeoFire;
 import com.firebase.geofire.GeoLocation;
 import com.google.android.gms.common.ConnectionResult;
@@ -53,7 +56,8 @@ public class LocationTracker implements LocationListener, GoogleApiClient.Connec
 
         // get userID and register listener for userID change
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(ctx);
-        this.userID = sharedPreferences.getString(Config.SHARED_PREFS_USER_ID, "");
+        this.userID = Settings.Secure.getString(ctx.getContentResolver(),
+                Settings.Secure.ANDROID_ID);
 
         // set firebase android context
         Firebase.setAndroidContext(ctx);
@@ -95,11 +99,37 @@ public class LocationTracker implements LocationListener, GoogleApiClient.Connec
      * Saves location in firebase
      */
     private void sendLocation(Location loc){
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(ctx);
+        String firebaseAuthToken = sp.getString(Config.SHARED_PREFS_FIREBASE_AUTH, "");
         Firebase firebaseRef = new Firebase(Config.FIREBASE_LOCATION_TRACKING);
-        GeoLocation gLoc = new GeoLocation(loc.getLatitude(), loc.getLongitude());
-        GeoFire geoFire = new GeoFire(firebaseRef);
-        geoFire.setLocation(userID, gLoc);
-        lastSentLocation = loc;
+        firebaseRef.authWithCustomToken(firebaseAuthToken, new MyAuthResultHandler(firebaseRef, loc));
+    }
+
+    /**
+     * Custom Authentication handler that saves stuff in firebase on success using geofire
+     */
+    private class MyAuthResultHandler implements Firebase.AuthResultHandler{
+        private Firebase firebaseRef;
+        private Location loc;
+
+        public MyAuthResultHandler(Firebase firebaseRef, Location loc){
+            this.firebaseRef = firebaseRef;
+            this.loc = loc;
+        }
+
+        @Override
+        public void onAuthenticated(AuthData authData) {
+            GeoLocation gLoc = new GeoLocation(loc.getLatitude(), loc.getLongitude());
+            GeoFire geoFire = new GeoFire(firebaseRef);
+            geoFire.setLocation(userID, gLoc);
+            lastSentLocation = loc;
+            Log.d(TAG, "successfully saved location in firebase");
+        }
+
+        @Override
+        public void onAuthenticationError(FirebaseError firebaseError) {
+            Log.d(TAG, "Firebase authentification error");
+        }
     }
 
     /**
@@ -132,7 +162,7 @@ public class LocationTracker implements LocationListener, GoogleApiClient.Connec
             Log.d(TAG, "currently no internet connection, registering connectivity_change receiver");
             //register broadcast receiver and do this when internet is available again...
             IntentFilter filter = new IntentFilter("android.net.conn.CONNECTIVITY_CHANGE");
-            MyReceiver myReceiver = new MyReceiver(loc);
+            MyBroadcastReceiver myReceiver = new MyBroadcastReceiver(loc);
             ctx.registerReceiver(myReceiver, filter);
         }
     }
@@ -159,9 +189,9 @@ public class LocationTracker implements LocationListener, GoogleApiClient.Connec
     /**
      * Broadcast receiver for the internet connectivity event...
      */
-    public class MyReceiver extends BroadcastReceiver {
+    public class MyBroadcastReceiver extends BroadcastReceiver {
         private Location loc;
-        public MyReceiver(Location loc) {
+        public MyBroadcastReceiver(Location loc) {
             this.loc = loc;
         }
 
