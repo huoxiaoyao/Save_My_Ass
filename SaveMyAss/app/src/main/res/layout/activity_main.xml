@@ -27,7 +27,24 @@
         android:layout_height="wrap_content"
         android:text="Trigger Alarm"
         android:id="@+id/triggerAlarm"
+        android:layout_above="@+id/txt_pattern"
+        android:layout_centerHorizontal="true" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Record pattern"
+        android:id="@+id/btn_rec_pattern"
         android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Pattern"
+        android:id="@+id/txt_pattern"
+        android:layout_above="@+id/btn_rec_pattern"
         android:layout_centerHorizontal="true" />
 
 </RelativeLayout>

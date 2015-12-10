@@ -16,6 +16,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
@@ -24,6 +25,7 @@ import android.widget.Toast;
 
 import ch.ethz.inf.vs.a4.savemyass.Centralized.Config;
 import ch.ethz.inf.vs.a4.savemyass.Centralized.GCMRegistrationIntentService;
+import ch.ethz.inf.vs.a4.savemyass.UI.ButtonCombination;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -33,6 +35,8 @@ public class MainActivity extends AppCompatActivity {
     private BroadcastReceiver RegistrationBroadcastReceiver;
     private Intent service;
     private boolean isBound;
+
+    private ButtonCombination buttonCombination;
 
     private ProgressBar RegistrationProgressBar;
     protected TextView log;
@@ -69,6 +73,33 @@ public class MainActivity extends AppCompatActivity {
                 mBoundService.triggerAlarm();
                 Intent i = new Intent(getApplicationContext(), HelpRequest.class);
                 startActivity(i);
+            }
+        });
+
+        // Button combination object
+        buttonCombination = new ButtonCombination(new Runnable() {
+            @Override
+            public void run() {
+                // trigger alarm
+                mBoundService.triggerAlarm();
+                Intent i = new Intent(getApplicationContext(), HelpRequest.class);
+                startActivity(i);
+            }
+        });
+
+        // Button combination button
+        final TextView txtPattern = (TextView)findViewById(R.id.txt_pattern);
+        txtPattern.setText("No Pattern.");
+        final Button btnRecordCombination = (Button)findViewById(R.id.btn_rec_pattern);
+        btnRecordCombination.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (buttonCombination.toggleRecording()) {
+                    btnRecordCombination.setText("Recording....");
+                } else {
+                    btnRecordCombination.setText("Record combination");
+                    txtPattern.setText("Pattern: " + buttonCombination.visualizePattern());
+                }
             }
         });
     }
@@ -171,5 +202,15 @@ public class MainActivity extends AppCompatActivity {
             unbindService(mConnection);
             isBound = false;
         }
+    }
+
+    /*
+     * Catch button events
+     */
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if(!buttonCombination.onKey(null, keyCode, event))
+            return super.onKeyDown(keyCode, event); // whatever the superclass did
+        else return true; // buttonCombination handled it (only volume up/down keys)
     }
 }
