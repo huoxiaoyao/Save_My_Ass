@@ -32,8 +32,8 @@ import ch.ethz.inf.vs.a4.savemyass.Structure.ServiceDestroyReceiver;
  * tracks the current location and updates in firebase if necessary
  */
 public class LocationTracker implements LocationListener, GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener, ServiceDestroyReceiver,
-        SharedPreferences.OnSharedPreferenceChangeListener{
+        GoogleApiClient.OnConnectionFailedListener, ServiceDestroyReceiver{
+
 
     private Context ctx;
     private ConnectivityManager cm;
@@ -54,10 +54,8 @@ public class LocationTracker implements LocationListener, GoogleApiClient.Connec
     public LocationTracker(Context ctx){
         this.ctx = ctx;
 
-        // get userID and register listener for userID change
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(ctx);
-        this.userID = Settings.Secure.getString(ctx.getContentResolver(),
-                Settings.Secure.ANDROID_ID);
+        // get userID
+        this.userID = Settings.Secure.getString(ctx.getContentResolver(), Settings.Secure.ANDROID_ID);
 
         // set firebase android context
         Firebase.setAndroidContext(ctx);
@@ -138,7 +136,6 @@ public class LocationTracker implements LocationListener, GoogleApiClient.Connec
     private void checkLocationAndUpdate(Location lastLocation) {
         Log.d(TAG, "checking if updating location in firebase is needed");
         if (lastLocation != null) {
-            Log.d(TAG, "loc: "+lastLocation.toString());
             loggedLocation = lastLocation;
             if (lastSentLocation == null) {
                 checkInternetAndSend(loggedLocation);
@@ -175,15 +172,6 @@ public class LocationTracker implements LocationListener, GoogleApiClient.Connec
         if (mGoogleApiClient.isConnected()) {
             mGoogleApiClient.disconnect();
         }
-    }
-
-    /**
-     * updates the user id when it's changed in the preferences for some reason...
-     */
-    @Override
-    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        if(key.equals(Config.SHARED_PREFS_USER_ID))
-            userID = sharedPreferences.getString(Config.SHARED_PREFS_USER_ID, "");
     }
 
     /**

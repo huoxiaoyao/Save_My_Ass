@@ -66,9 +66,10 @@ public class MainActivity extends AppCompatActivity {
         alarm.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                //Intent test = new Intent(Config.INTENT_START_ALARM);
+                //test.putExtra("test", "TEST!!!");
+                //LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(test);
                 mBoundService.triggerAlarm();
-                Intent i = new Intent(getApplicationContext(), HelpRequest.class);
-                startActivity(i);
             }
         });
     }
@@ -96,7 +97,7 @@ public class MainActivity extends AppCompatActivity {
                     RegistrationProgressBar.setVisibility(ProgressBar.GONE);
                     SharedPreferences sp =  PreferenceManager.getDefaultSharedPreferences(context);
                     boolean sentToken = sp.getBoolean(Config.SENT_TOKEN_TO_SERVER, false);
-                    log.setText(log.getText()+"\n- token begins with: "+sp.getString(Config.SHARED_PREFS_USER_ID, "").substring(0,10));
+                    log.setText(log.getText()+"\n- token begins with: "+sp.getString(Config.SHARED_PREFS_TOKEN, "").substring(0,10));
                     if (sentToken) {
                         log.setText(log.getText()+"\n- token sent! centralized version is up and running!");
                     } else {

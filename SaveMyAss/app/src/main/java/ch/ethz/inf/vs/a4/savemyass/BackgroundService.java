@@ -6,18 +6,20 @@ import android.content.SharedPreferences;
 import android.os.Binder;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
+import android.provider.Settings;
 import android.util.Log;
 
 import java.util.LinkedList;
 import java.util.List;
 
 import ch.ethz.inf.vs.a4.savemyass.Centralized.Config;
-import ch.ethz.inf.vs.a4.savemyass.Centralized.GCMReceiver;
+import ch.ethz.inf.vs.a4.savemyass.Centralized.GCMBackendManager;
 import ch.ethz.inf.vs.a4.savemyass.Centralized.GCMSender;
 import ch.ethz.inf.vs.a4.savemyass.Centralized.LocationTracker;
-import ch.ethz.inf.vs.a4.savemyass.Structure.InfoBundle;
+import ch.ethz.inf.vs.a4.savemyass.Structure.PINInfoBundle;
 import ch.ethz.inf.vs.a4.savemyass.Structure.ServiceDestroyReceiver;
 import ch.ethz.inf.vs.a4.savemyass.Structure.SimpleAlarmDistributor;
+import ch.ethz.inf.vs.a4.savemyass.UI.AlarmNotifier;
 
 /**
  * Created by jan on 30.11.15.
@@ -32,12 +34,13 @@ public class BackgroundService extends Service{
 
     public String TAG = "###BackgroundService";
 
-    public String userID;
     public SimpleAlarmDistributor alarmDistributor, uiDistributor;
 
     private final IBinder binder = new LocalBinder();
     private List<ServiceDestroyReceiver> serviceDestroyReceivers;
     private LocationTracker locationTracker;
+    private GCMBackendManager gcmBackendManager;
+    public HelperMapCombiner mapCombiner;
 
     /**
      * Class for clients to access.  Because we know this service always runs in the same process as
@@ -49,32 +52,30 @@ public class BackgroundService extends Service{
         }
     }
 
+
     @Override
     public void onCreate() {
         super.onCreate();
 
-        //todo: for the peer-to-peer approach: when you need the userID better use shared preferences
-        //directly then taking it form here, make sure to also implement the change listener
-        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        userID = sp.getString(Config.SHARED_PREFS_USER_ID, "");
-
+        // check if gcm set up correctly
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
         if(!sp.getBoolean(Config.SENT_TOKEN_TO_SERVER, false)){
-            //stopSelf();
-            Log.d(TAG, "userID is not known yet!");
+            stopSelf();
+            Log.d(TAG, "token is not sent to server yet!");
         }
 
         Log.d(TAG, "service created");
 
         // create the distributors
+        // ui Distributor notifies the UI where an alarm happened -> shows notification and opens
         uiDistributor = new SimpleAlarmDistributor();
+        uiDistributor.register(new AlarmNotifier(getApplicationContext()));
+
+        // alarm Distributor distributes a given alarm further on
         alarmDistributor = new SimpleAlarmDistributor();
 
         // set up the centralized stuff
         locationTracker = new LocationTracker(getApplicationContext());
-        // todo: pass the ui Distributor to this receiver! -> really???
-        //GCMReceiver gcmReceiver = new GCMReceiver(uiDistributor);
-        Intent i = new Intent(getApplicationContext(), GCMReceiver.class);
-//        startService(i);
 
         GCMSender gcmSender = new GCMSender(getApplicationContext(), locationTracker);
         alarmDistributor.register(gcmSender);
@@ -82,18 +83,35 @@ public class BackgroundService extends Service{
         // set up service destroy receivers
         serviceDestroyReceivers = new LinkedList<>();
         serviceDestroyReceivers.add(locationTracker);
+
+        // this handles the receiving of broadcasts from the gcm backend
+        gcmBackendManager = new GCMBackendManager(this, getApplicationContext(), uiDistributor);
+
+        // the thing that will combine the helper maps...
+        //TODO: @whoeverdoes the UI: register to this to get updates of the locations of people nearby
+        mapCombiner = new HelperMapCombiner();
     }
 
     /**
      * creates info bundle and starts alarm
      */
+    //TODO: @whoeverdoes the UI and alarm trigger logic: call this method to trigger alarm
     public void triggerAlarm() {
-        InfoBundle info = new InfoBundle(userID, locationTracker.loggedLocation);
+        String androidID = Settings.Secure.getString(this.getContentResolver(),
+                Settings.Secure.ANDROID_ID);
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
+        String message = sp.getString(Config.SHARED_PREFS_USER_MESSAGE, "");
+        PINInfoBundle info = new PINInfoBundle(androidID, locationTracker.loggedLocation, message);
         alarmDistributor.distributeToSend(info);
+        Intent i = new Intent(getApplicationContext(), HelpRequest.class);
+        i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(i);
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        gcmBackendManager.registerBroadcastReceivers(intent);
+        //todo: the service does no longer get restarted after activity is gone!
         return START_STICKY;
     }
 

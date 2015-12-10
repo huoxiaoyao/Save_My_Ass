@@ -1,9 +1,7 @@
 package ch.ethz.inf.vs.a4.savemyass.Centralized;
 
-import android.app.Service;
-import android.content.Intent;
+import android.content.Context;
 import android.content.SharedPreferences;
-import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
@@ -11,38 +9,37 @@ import com.firebase.client.AuthData;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
 import com.firebase.geofire.GeoFire;
+import com.firebase.geofire.GeoLocation;
+
+import ch.ethz.inf.vs.a4.savemyass.Structure.PINInfoBundle;
 
 /**
  * Created by jan on 09.12.15.
  *
  * Tracks the current state of the alarm
- * - notifies the user if necessary
- * - enlarges the radius if nobody replied within an amount of time etc.
  */
-// todo: implement this service
-public class OnGoingAlarmService extends Service {
+public abstract class OnGoingAlarm {
 
     protected static final String TAG = "###OnGoingAlarmService";
 
+    protected Context ctx;
     protected GeoFire geoFire;
+    protected GeoLocation pinLocation;
+    protected PINInfoBundle pinInfoBundle;
 
-    @Override
-    public void onCreate() {
-        super.onCreate();
-    }
-
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        // get the url from the intent
-        String firebaseURL = intent.getStringExtra(Config.INTENT_FIREBASE_ALARM_URL);
+    public OnGoingAlarm(Context ctx, String firebaseURL, PINInfoBundle pinInfoBundle){
+        this.pinInfoBundle = pinInfoBundle;
+        this.ctx = ctx;
+        if(pinInfoBundle == null)
+            return;
+        pinLocation = new GeoLocation(pinInfoBundle.loc.getLatitude(), pinInfoBundle.loc.getLongitude());
         // get the authentication token from shared preferences
-        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(ctx);
         String firebaseAuthToken = sp.getString(Config.SHARED_PREFS_FIREBASE_AUTH, "");
         // create firebase reference
         Firebase firebaseRef = new Firebase(firebaseURL);
         // authenticate and create geoFire reference
         firebaseRef.authWithCustomToken(firebaseAuthToken, new MyAuthResultHandler(firebaseRef));
-        return super.onStartCommand(intent, flags, startId);
     }
 
     /**
@@ -57,8 +54,9 @@ public class OnGoingAlarmService extends Service {
 
         @Override
         public void onAuthenticated(AuthData authData) {
-            OnGoingAlarmService.this.geoFire = new GeoFire(firebaseRef);
+            OnGoingAlarm.this.geoFire = new GeoFire(firebaseRef);
             Log.d(TAG, "successfully created geo fire reference");
+            onGeoFireRefReady();
         }
 
         @Override
@@ -68,8 +66,5 @@ public class OnGoingAlarmService extends Service {
         }
     }
 
-    @Override
-    public IBinder onBind(Intent intent) {
-        return null;
-    }
+    abstract void onGeoFireRefReady();
 }

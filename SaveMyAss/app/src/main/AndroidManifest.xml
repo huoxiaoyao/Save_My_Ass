@@ -23,12 +23,11 @@
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
-        <!-- [START gcm_receiver] -->
+        <!--GCM receiver-->
         <receiver
             android:name="com.google.android.gms.gcm.GcmReceiver"
             android:exported="true"
@@ -38,7 +37,13 @@
                 <category android:name=".Centralized" />
             </intent-filter>
         </receiver>
-        <!-- [END gcm_receiver] -->
+
+        <!-- BootComplete receiver-->
+        <receiver android:name=".ServiceStarter">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+            </intent-filter>
+        </receiver>
 
         <!--Background Service-->
         <service
@@ -69,12 +74,8 @@
         </service>
 
         <activity android:name=".HelpRequest" />
-        <activity android:name=".HelpOthers"></activity>
-        <receiver android:name=".ServiceStarter">
-            <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED"/>
-            </intent-filter>
-        </receiver>
+        <activity android:name=".HelpOthers" />
+
     </application>
 
 </manifest>
