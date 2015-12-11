@@ -15,7 +15,7 @@ public class SimpleAlarmDistributor implements AlarmDistributor{
     }
 
     @Override
-    public void distributeToSend(InfoBundle info) {
+    public void distributeToSend(PINInfoBundle info) {
         for(AlarmSender s : senders) {
             s.callForHelp(info);
         }
