@@ -35,7 +35,7 @@ public class OnGoingAlarmPIN extends OnGoingAlarm {
 
     @Override
     void onGeoFireRefReady() {
-        GeoQuery geoQuery = geoFire.queryAtLocation(pinLocation, 100);
+        GeoQuery geoQuery = geoFire.queryAtLocation(pinLocation, 500);
         geoQuery.addGeoQueryEventListener(new GeoQueryEventListener() {
             @Override
             public void onKeyEntered(String key, GeoLocation location) {
