@@ -9,7 +9,7 @@ import com.firebase.geofire.GeoLocation;
 import com.firebase.geofire.GeoQuery;
 import com.firebase.geofire.GeoQueryEventListener;
 
-import ch.ethz.inf.vs.a4.savemyass.BackgroundService;
+import ch.ethz.inf.vs.a4.savemyass.HelperMapCombiner;
 import ch.ethz.inf.vs.a4.savemyass.Structure.HelperInfoBundle;
 import ch.ethz.inf.vs.a4.savemyass.Structure.PINInfoBundle;
 
@@ -24,16 +24,18 @@ public class OnGoingAlarmPIN extends OnGoingAlarm {
 
     protected static final String TAG = "###OnGoingASPIN";
 
-    private BackgroundService bks;
+    private HelperMapCombiner mapCombiner;
 
-    public OnGoingAlarmPIN(Context ctx, String firebaseURL, PINInfoBundle pinInfoBundle, BackgroundService bks) {
+    public OnGoingAlarmPIN(Context ctx, String firebaseURL, PINInfoBundle pinInfoBundle, HelperMapCombiner mapCombiner) {
         super(ctx, firebaseURL, pinInfoBundle);
-        this.bks = bks;
+        this.mapCombiner = mapCombiner;
     }
+
+
 
     @Override
     void onGeoFireRefReady() {
-        GeoQuery geoQuery = geoFire.queryAtLocation(pinLocation, Config.ALARM_DISTANCE_THRESHOLD);
+        GeoQuery geoQuery = geoFire.queryAtLocation(pinLocation, 100);
         geoQuery.addGeoQueryEventListener(new GeoQueryEventListener() {
             @Override
             public void onKeyEntered(String key, GeoLocation location) {
@@ -42,17 +44,23 @@ public class OnGoingAlarmPIN extends OnGoingAlarm {
                 loc.setLatitude(location.latitude);
                 loc.setLongitude(location.longitude);
                 HelperInfoBundle infoBundle = new HelperInfoBundle(key, loc, System.currentTimeMillis());
-                bks.mapCombiner.add(infoBundle, true);
+                mapCombiner.add(infoBundle, true);
             }
 
             @Override
             public void onKeyExited(String key) {
+                // should never happen...
                 Log.d(TAG, "exit - key: " + key);
             }
 
             @Override
             public void onKeyMoved(String key, GeoLocation location) {
                 Log.d(TAG, "move - key: " + key + " loc: " + location.latitude + "," + location.longitude);
+                Location loc = new Location("");
+                loc.setLatitude(location.latitude);
+                loc.setLongitude(location.longitude);
+                HelperInfoBundle infoBundle = new HelperInfoBundle(key, loc, System.currentTimeMillis());
+                mapCombiner.add(infoBundle, true);
             }
 
             @Override

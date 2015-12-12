@@ -97,7 +97,7 @@ public class GCMRegistrationIntentService extends IntentService {
      * @param token The new token.
      */
     private boolean sendRegistrationToServer(String token, String salt) {
-        Log.d(TAG, "trying to sending registration token to server " + token);
+        Log.d(TAG, "trying to send registration token to server: " + token);
         try {
             String androidId = Settings.Secure.getString(this.getContentResolver(),
                     Settings.Secure.ANDROID_ID);

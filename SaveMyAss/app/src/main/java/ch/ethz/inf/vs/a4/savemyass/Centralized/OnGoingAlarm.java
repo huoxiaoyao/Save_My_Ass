@@ -26,10 +26,12 @@ public abstract class OnGoingAlarm {
     protected GeoFire geoFire;
     protected GeoLocation pinLocation;
     protected PINInfoBundle pinInfoBundle;
+    protected String firebaseURL;
 
     public OnGoingAlarm(Context ctx, String firebaseURL, PINInfoBundle pinInfoBundle){
-        this.pinInfoBundle = pinInfoBundle;
         this.ctx = ctx;
+        this.pinInfoBundle = pinInfoBundle;
+        this.firebaseURL = firebaseURL;
         if(pinInfoBundle == null)
             return;
         pinLocation = new GeoLocation(pinInfoBundle.loc.getLatitude(), pinInfoBundle.loc.getLongitude());

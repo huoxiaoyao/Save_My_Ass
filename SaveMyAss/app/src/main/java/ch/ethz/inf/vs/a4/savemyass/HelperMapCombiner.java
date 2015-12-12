@@ -3,6 +3,7 @@ package ch.ethz.inf.vs.a4.savemyass;
 import android.location.Location;
 
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 
 import ch.ethz.inf.vs.a4.savemyass.Centralized.Config;
@@ -25,6 +26,8 @@ public class HelperMapCombiner {
         serverMap = new HashMap<>();
         p2pMap = new HashMap<>();
         lastUpdate = new HashMap<>();
+        mergedMap = new HashMap<>();
+        mapUpdatReceiver = new LinkedList<>();
     }
 
     /**
@@ -54,7 +57,6 @@ public class HelperMapCombiner {
             lastUpdate.put(info.userID, new UpdateTimeAndSource(info.infoArrivalTime, centralized));
             notifyReceivers();
         }
-
     }
 
     /**

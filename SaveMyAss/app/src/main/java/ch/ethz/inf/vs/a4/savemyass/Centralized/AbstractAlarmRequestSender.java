@@ -1,10 +1,8 @@
 package ch.ethz.inf.vs.a4.savemyass.Centralized;
 
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
-import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -19,17 +17,20 @@ import ch.ethz.inf.vs.a4.savemyass.Structure.PINInfoBundle;
  *
  * sends a request to the app engine server that starts an alarm
  */
-public class GCMSender implements AlarmSender, ResponseListener {
+public abstract class AbstractAlarmRequestSender implements AlarmSender{
 
-    private final static String TAG = "###GCMSender";
+    protected final static String TAG = "###AlarmRequestSender";
 
-    private Context ctx;
-    private LocationTracker locationTracker;
-    private PINInfoBundle infoBundle;
+    protected Context ctx;
+    protected PINInfoBundle infoBundle;
+    private ResponseListener responseListener;
 
-    public GCMSender(Context ctx, LocationTracker locationTracker){
+    public AbstractAlarmRequestSender(Context ctx){
         this.ctx = ctx;
-        this.locationTracker = locationTracker;
+    }
+
+    public void setResponseListener(ResponseListener newResponseListener){
+        responseListener = newResponseListener;
     }
 
     @Override
@@ -37,7 +38,8 @@ public class GCMSender implements AlarmSender, ResponseListener {
         if(bundle.loc == null){
             Toast toast = Toast.makeText(ctx, "Location is null! Running on a device without google play services?", Toast.LENGTH_SHORT);
             toast.show();
-            return;
+            //return;
+            bundle.loc = Config.DUMMY_LOC();
         }
         infoBundle = bundle;
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(ctx);
@@ -46,15 +48,14 @@ public class GCMSender implements AlarmSender, ResponseListener {
             request.put("salt", sp.getString(Config.SHARED_PREFS_SALT, ""));
             RequestSender requestSender = new RequestSender(Config.GCM_START_ALARM_URL);
             Log.d(TAG, "sending call for help to server: "+request.toString());
-            requestSender.sendRequest(request, this);
+            requestSender.sendRequest(request, responseListener);
         } catch (JSONException e) {
             e.printStackTrace();
         }
     }
 
-    @Override
-    public void onResponseReceive(JSONObject response) {
-        if(response == null){
+    //@Override
+/*    public void onResponseReceive(JSONObject response) { if(response == null){
             Log.d(TAG, "server responded with null");
             Toast toast = Toast.makeText(ctx, "server responded with null", Toast.LENGTH_SHORT);
             toast.show();
@@ -79,5 +80,5 @@ public class GCMSender implements AlarmSender, ResponseListener {
             }
             Log.d(TAG, "successfully triggered the alarm!");
         }
-    }
+    }*/
 }

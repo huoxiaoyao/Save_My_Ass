@@ -2,16 +2,14 @@ package ch.ethz.inf.vs.a4.savemyass;
 
 import android.Manifest;
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.preference.PreferenceManager;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
@@ -20,7 +18,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import ch.ethz.inf.vs.a4.savemyass.Centralized.Config;
 import ch.ethz.inf.vs.a4.savemyass.Centralized.GCMRegistrationIntentService;
@@ -29,10 +26,10 @@ public class MainActivity extends AppCompatActivity {
 
     protected final String TAG = "###MainActivity";
 
-    private BackgroundService mBoundService;
+    //private BackgroundService mBoundService;
     private BroadcastReceiver RegistrationBroadcastReceiver;
-    private Intent service;
-    private boolean isBound;
+    //private Intent service;
+    //private boolean isBound;
 
     private ProgressBar RegistrationProgressBar;
     protected TextView log;
@@ -48,28 +45,30 @@ public class MainActivity extends AppCompatActivity {
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED){
-            Toast toast = Toast.makeText(this, "please grant location permission in settings!", Toast.LENGTH_LONG);
-            toast.show();
-            this.finish();
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+            finish();
         }
-        else {
-            initializeCentralized();
-            if(service == null) {
-                service = new Intent(getApplicationContext(), BackgroundService.class);
-                startService(service);
-                Log.d(TAG, "BackgroundService has been started");
-            }
+        if(ContextCompat.checkSelfPermission(this,
+                Manifest.permission.GET_ACCOUNTS)
+                != PackageManager.PERMISSION_GRANTED){
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.GET_ACCOUNTS}, 2);
+            finish();
         }
+
+        // only gets executed if all permissions are set
+        initializeCentralized();
+        Intent i = new Intent(getApplicationContext(), BackgroundService.class);
+        startService(i);
 
         // alarm trigger button
         Button alarm = (Button) findViewById(R.id.triggerAlarm);
         alarm.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //Intent test = new Intent(Config.INTENT_START_ALARM);
-                //test.putExtra("test", "TEST!!!");
-                //LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(test);
-                mBoundService.triggerAlarm();
+                Intent i = new Intent(getApplicationContext(), HelpRequest.class);
+                startActivity(i);
             }
         });
     }
@@ -82,7 +81,7 @@ public class MainActivity extends AppCompatActivity {
         // note SENT_TOKEN_TO_SERVER set to true also guarantees that there is a user id in the
         // shared prefs
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        sharedPreferences.edit().putBoolean(Config.SENT_TOKEN_TO_SERVER, false).apply();
+        //sharedPreferences.edit().putBoolean(Config.SENT_TOKEN_TO_SERVER, false).apply();
 
         // progress bar that is used for the registration for the centralized approach
         RegistrationProgressBar = (ProgressBar) findViewById(R.id.registrationProgressBar);
@@ -97,8 +96,8 @@ public class MainActivity extends AppCompatActivity {
                     RegistrationProgressBar.setVisibility(ProgressBar.GONE);
                     SharedPreferences sp =  PreferenceManager.getDefaultSharedPreferences(context);
                     boolean sentToken = sp.getBoolean(Config.SENT_TOKEN_TO_SERVER, false);
-                    log.setText(log.getText()+"\n- token begins with: "+sp.getString(Config.SHARED_PREFS_TOKEN, "").substring(0,10));
                     if (sentToken) {
+                        log.setText(log.getText()+"\n- token begins with: "+sp.getString(Config.SHARED_PREFS_TOKEN, "").substring(0,10));
                         log.setText(log.getText()+"\n- token sent! centralized version is up and running!");
                     } else {
                         log.setText(log.getText()+"\n- error while sending token, NOTIFY THE USER " +
@@ -116,7 +115,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        doBindService();
+        //doBindService();
     }
 
     @Override
@@ -135,10 +134,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        doUnbindService();
+        //doUnbindService();
     }
 
-    private ServiceConnection mConnection = new ServiceConnection() {
+/*    private ServiceConnection mConnection = new ServiceConnection() {
         public void onServiceConnected(ComponentName className, IBinder service) {
             // This is called when the connection with the service has been
             // established, giving us the service object we can use to
@@ -146,9 +145,9 @@ public class MainActivity extends AppCompatActivity {
             // service that we know is running in our own process, we can
             // cast its IBinder to a concrete class and directly access it.
             mBoundService = ((BackgroundService.LocalBinder)service).getService();
-        }
+        }*/
 
-    public void onServiceDisconnected(ComponentName className) {
+/*    public void onServiceDisconnected(ComponentName className) {
             // This is called when the connection with the service has been
             // unexpectedly disconnected -- that is, its process crashed.
             // Because it is running in our same process, we should never
@@ -172,5 +171,5 @@ public class MainActivity extends AppCompatActivity {
             unbindService(mConnection);
             isBound = false;
         }
-    }
+    }*/
 }
