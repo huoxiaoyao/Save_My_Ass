@@ -68,6 +68,12 @@ public class HelpRequest extends AppCompatActivity implements LocationListener, 
         super.onResume();
     }
 
+    @Override
+    protected void onDestroy() {
+        mGoogleApiClient.disconnect();
+        super.onDestroy();
+    }
+
     /**
      * gets called as soon as the info bundle is ready -> location is available
      */

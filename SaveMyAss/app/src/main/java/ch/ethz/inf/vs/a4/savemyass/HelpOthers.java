@@ -71,6 +71,12 @@ public class HelpOthers extends AppCompatActivity implements LocationListener, G
         locationUpdates.add(alarm);
     }
 
+    @Override
+    protected void onDestroy() {
+        mGoogleApiClient.disconnect();
+        super.onDestroy();
+    }
+
     // creates location request
     private LocationRequest createLocationRequest() {
         LocationRequest mLocationRequest = new LocationRequest();
