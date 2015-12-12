@@ -3,7 +3,6 @@ package ch.ethz.inf.vs.a4.savemyass;
 import android.app.Service;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.Binder;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -33,21 +32,7 @@ public class BackgroundService extends Service{
 
     public SimpleAlarmDistributor alarmDistributor, uiDistributor;
 
-    private final IBinder binder = new LocalBinder();
     private List<ServiceDestroyReceiver> serviceDestroyReceivers;
-    private LocationTracker locationTracker;
-    public HelperMapCombiner mapCombiner;
-
-    /**
-     * Class for clients to access.  Because we know this service always runs in the same process as
-     * its clients, we don't need to deal with IPC but can simply bind or unbind from any activity.
-     */
-    public class LocalBinder extends Binder {
-        public BackgroundService getService() {
-            return BackgroundService.this;
-        }
-    }
-
 
     @Override
     public void onCreate() {
@@ -71,7 +56,7 @@ public class BackgroundService extends Service{
         alarmDistributor = new SimpleAlarmDistributor();
 
         // set up the centralized stuff
-        locationTracker = new LocationTracker(getApplicationContext());
+        LocationTracker locationTracker = new LocationTracker(getApplicationContext());
 
         // todo implement this!
         AlarmDistributor gcmDistributor = new AlarmDistributor(getApplicationContext());
@@ -98,6 +83,6 @@ public class BackgroundService extends Service{
 
     @Override
     public IBinder onBind(Intent intent) {
-        return binder;
+        return null;
     }
 }
