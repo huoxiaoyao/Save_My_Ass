@@ -9,11 +9,15 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.media.AudioManager;
+import android.media.VolumeProvider;
+import android.media.session.MediaSession;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v4.media.VolumeProviderCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -35,8 +39,6 @@ public class MainActivity extends AppCompatActivity {
     private BroadcastReceiver RegistrationBroadcastReceiver;
     private Intent service;
     private boolean isBound;
-
-    private ButtonCombination buttonCombination;
 
     private ProgressBar RegistrationProgressBar;
     protected TextView log;
@@ -76,17 +78,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // Button combination object
-        buttonCombination = new ButtonCombination(new Runnable() {
-            @Override
-            public void run() {
-                // trigger alarm
-                mBoundService.triggerAlarm();
-                Intent i = new Intent(getApplicationContext(), HelpRequest.class);
-                startActivity(i);
-            }
-        });
-
         // Button combination button
         final TextView txtPattern = (TextView)findViewById(R.id.txt_pattern);
         txtPattern.setText("No Pattern.");
@@ -94,14 +85,15 @@ public class MainActivity extends AppCompatActivity {
         btnRecordCombination.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (buttonCombination.toggleRecording()) {
+                if (mBoundService.buttonCombination.toggleRecording()) {
                     btnRecordCombination.setText("Recording....");
                 } else {
                     btnRecordCombination.setText("Record combination");
-                    txtPattern.setText("Pattern: " + buttonCombination.visualizePattern());
+                    txtPattern.setText("Pattern: " + mBoundService.buttonCombination.visualizePattern());
                 }
             }
         });
+        setVolumeControlStream(AudioManager.STREAM_MUSIC);
     }
 
     /**
@@ -178,7 +170,7 @@ public class MainActivity extends AppCompatActivity {
             mBoundService = ((BackgroundService.LocalBinder)service).getService();
         }
 
-    public void onServiceDisconnected(ComponentName className) {
+        public void onServiceDisconnected(ComponentName className) {
             // This is called when the connection with the service has been
             // unexpectedly disconnected -- that is, its process crashed.
             // Because it is running in our same process, we should never
@@ -202,15 +194,5 @@ public class MainActivity extends AppCompatActivity {
             unbindService(mConnection);
             isBound = false;
         }
-    }
-
-    /*
-     * Catch button events
-     */
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if(!buttonCombination.onKey(null, keyCode, event))
-            return super.onKeyDown(keyCode, event); // whatever the superclass did
-        else return true; // buttonCombination handled it (only volume up/down keys)
     }
 }

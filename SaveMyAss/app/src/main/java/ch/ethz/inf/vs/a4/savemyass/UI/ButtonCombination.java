@@ -21,8 +21,8 @@ public class ButtonCombination implements View.OnKeyListener{
      * Enum to capture states we want to consider for patterns.
      */
     private enum ButtonStates {
-        VOLUME_UP("^"),
-        VOLUME_DOWN("v");
+        VOLUME_UP("/\\"),
+        VOLUME_DOWN("\\/");
 
         private String repr;
         ButtonStates(String repr){
@@ -133,8 +133,8 @@ public class ButtonCombination implements View.OnKeyListener{
     public String visualizePattern(){
         String result = "";
         for (ButtonStates s : pattern) {
-            result += s.getRepr();
+            result += "~" + s.getRepr();
         }
-        return result;
+        return result + "~";
     }
 }

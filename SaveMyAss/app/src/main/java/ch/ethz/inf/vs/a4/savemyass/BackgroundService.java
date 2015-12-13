@@ -1,12 +1,18 @@
 package ch.ethz.inf.vs.a4.savemyass;
 
+import android.annotation.TargetApi;
 import android.app.Service;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.media.AudioManager;
+import android.media.VolumeProvider;
+import android.media.session.MediaSession;
 import android.os.Binder;
+import android.os.Handler;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import android.view.KeyEvent;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -18,6 +24,8 @@ import ch.ethz.inf.vs.a4.savemyass.Centralized.LocationTracker;
 import ch.ethz.inf.vs.a4.savemyass.Structure.InfoBundle;
 import ch.ethz.inf.vs.a4.savemyass.Structure.ServiceDestroyReceiver;
 import ch.ethz.inf.vs.a4.savemyass.Structure.SimpleAlarmDistributor;
+import ch.ethz.inf.vs.a4.savemyass.UI.ButtonCombination;
+import ch.ethz.inf.vs.a4.savemyass.UI.MediaButtonObserver;
 
 /**
  * Created by jan on 30.11.15.
@@ -39,6 +47,10 @@ public class BackgroundService extends Service{
     private List<ServiceDestroyReceiver> serviceDestroyReceivers;
     private LocationTracker locationTracker;
 
+    private MediaSession buttonEventsMediaSession;
+    public ButtonCombination buttonCombination;
+    private MediaButtonObserver observer;
+
     /**
      * Class for clients to access.  Because we know this service always runs in the same process as
      * its clients, we don't need to deal with IPC but can simply bind or unbind from any activity.
@@ -50,6 +62,7 @@ public class BackgroundService extends Service{
     }
 
     @Override
+    @TargetApi(21)
     public void onCreate() {
         super.onCreate();
 
@@ -82,6 +95,63 @@ public class BackgroundService extends Service{
         // set up service destroy receivers
         serviceDestroyReceivers = new LinkedList<>();
         serviceDestroyReceivers.add(locationTracker);
+
+        // Button combination object
+        buttonCombination = new ButtonCombination(new Runnable() {
+            @Override
+            public void run() {
+                triggerAlarm();
+            }
+        });
+
+        // listen for button events
+
+        observer = new MediaButtonObserver(new Handler(), getApplicationContext(), new MediaButtonObserver.OnVolumeChangeListener() {
+            @Override
+            public void onVolumeChange(boolean up) {
+                if(up) buttonCombination.onKey(null, KeyEvent.ACTION_UP, null);
+                else buttonCombination.onKey(null, KeyEvent.ACTION_DOWN, null);
+            }
+        });
+        this.getApplicationContext().getContentResolver().registerContentObserver(
+                android.provider.Settings.System.CONTENT_URI, true,
+                observer );
+
+        buttonEventsMediaSession = new MediaSession(getApplicationContext(), "Button event session");
+        VolumeProvider vp = new VolumeProvider(VolumeProvider.VOLUME_CONTROL_RELATIVE, 10, 5) {
+            @Override
+            public void onAdjustVolume(int direction) {
+                Log.d(TAG, "volume change");
+                switch (direction) {
+                    case AudioManager.ADJUST_LOWER:
+                        buttonCombination.onKey(null, KeyEvent.ACTION_DOWN, null);
+                        break;
+                    case AudioManager.ADJUST_RAISE:
+                        buttonCombination.onKey(null, KeyEvent.ACTION_UP, null);
+                        break;
+                }
+            }
+
+            @Override
+            public void onSetVolumeTo(int volume) {
+                Log.d(TAG, "volume set");
+                super.onSetVolumeTo(volume);
+            }
+        };
+
+        buttonEventsMediaSession.setPlaybackToRemote(vp);
+        buttonEventsMediaSession.setCallback(new MediaSession.Callback() {
+            @Override
+            public boolean onMediaButtonEvent(Intent mediaButtonIntent) {
+                Log.d(TAG, "volume change");
+                int keyCode = ((KeyEvent)mediaButtonIntent.getSerializableExtra(Intent.EXTRA_KEY_EVENT)).getKeyCode();
+                if(!buttonCombination.onKey(null, keyCode, null)){
+                    return super.onMediaButtonEvent(mediaButtonIntent);
+                }
+                return true;
+            }
+        });
+        buttonEventsMediaSession.setActive(true);
     }
 
     /**
@@ -110,4 +180,5 @@ public class BackgroundService extends Service{
     public IBinder onBind(Intent intent) {
         return binder;
     }
+
 }

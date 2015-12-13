@@ -46,6 +46,13 @@
             android:enabled="true"
             android:exported="true" />
 
+        <!--Media button receiver-->
+        <receiver android:name=".UI.MediaButtonObserver">
+            <intent-filter>
+                <action android:name="android.intent.action.MEDIA_BUTTON" />
+            </intent-filter>
+        </receiver>
+
         <!--GCM Id change listener-->
         <service
             android:name=".Centralized.GCMInstanceIDListener"
