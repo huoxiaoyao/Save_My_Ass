@@ -49,13 +49,13 @@ public class HelperMapCombiner {
             if(update.time < info.infoArrivalTime - Config.IGNORE_OTHER_LOCATION_THRESHOLD){
                 lastUpdate.put(info.userID, new UpdateTimeAndSource(info.infoArrivalTime, centralized));
                 mergedMap.put(info.userID, info.loc);
-                notifyReceivers();
+                notifyReceiversUpdate();
             }
         }
         else{
             mergedMap.put(info.userID, info.loc);
             lastUpdate.put(info.userID, new UpdateTimeAndSource(info.infoArrivalTime, centralized));
-            notifyReceivers();
+            notifyReceiversUpdate();
         }
     }
 
@@ -77,7 +77,7 @@ public class HelperMapCombiner {
     /**
      * notifies the map update receivers
      */
-    private void notifyReceivers(){
+    private void notifyReceiversUpdate(){
         for(HelperMapUpdateReceiver r : mapUpdatReceiver){
             r.onUpdate();
         }
@@ -91,15 +91,4 @@ public class HelperMapCombiner {
             this.centralized = centralized;
         }
     }
-
-
-
-
-
-
-
-
-
-
-
 }
