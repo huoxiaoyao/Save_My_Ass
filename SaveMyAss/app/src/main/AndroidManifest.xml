@@ -51,12 +51,12 @@
             android:enabled="true"
             android:exported="true" />
 
-        <!--Media button receiver-->
+        <!--Media button receiver
         <receiver android:name=".UI.MediaButtonObserver">
             <intent-filter>
                 <action android:name="android.intent.action.MEDIA_BUTTON" />
             </intent-filter>
-        </receiver>
+        </receiver>-->
 
         <!--GCM Id change listener-->
 

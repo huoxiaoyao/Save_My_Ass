@@ -2,6 +2,7 @@ package ch.ethz.inf.vs.a4.savemyass;
 
 import android.annotation.TargetApi;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.media.AudioManager;
@@ -45,7 +46,6 @@ public class BackgroundService extends Service{
     private List<ServiceDestroyReceiver> serviceDestroyReceivers;
     private LocationTracker locationTracker;
 
-    private MediaSession buttonEventsMediaSession;
     public ButtonCombination buttonCombination;
     private MediaButtonObserver observer;
 
@@ -102,6 +102,25 @@ public class BackgroundService extends Service{
         });
 
         // listen for button events
+        // Request audio focus for 'playback'
+        final AudioManager am = ((AudioManager)getSystemService(Context.AUDIO_SERVICE));
+        int result = am.requestAudioFocus(new AudioManager.OnAudioFocusChangeListener() {
+                                              @Override
+                                              public void onAudioFocusChange(int focusChange) {
+                                                  // like I care
+                                              }
+                                          },
+                // Use the music stream.
+                AudioManager.STREAM_MUSIC,
+                // Request permanent focus.
+                AudioManager.AUDIOFOCUS_GAIN);
+
+        if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+            // something I guess
+            Log.d(TAG, "audio focus granted");
+        }else{
+            Log.d(TAG, "audio focus denied");
+        }
 
         observer = new MediaButtonObserver(new Handler(), getApplicationContext(), new MediaButtonObserver.OnVolumeChangeListener() {
             @Override
@@ -112,43 +131,22 @@ public class BackgroundService extends Service{
         });
         this.getApplicationContext().getContentResolver().registerContentObserver(
                 android.provider.Settings.System.CONTENT_URI, true,
-                observer );
+                observer);
 
-        buttonEventsMediaSession = new MediaSession(getApplicationContext(), "Button event session");
-        VolumeProvider vp = new VolumeProvider(VolumeProvider.VOLUME_CONTROL_RELATIVE, 10, 5) {
+        new Thread(){
             @Override
-            public void onAdjustVolume(int direction) {
-                Log.d(TAG, "volume change");
-                switch (direction) {
-                    case AudioManager.ADJUST_LOWER:
-                        buttonCombination.onKey(null, KeyEvent.ACTION_DOWN, null);
-                        break;
-                    case AudioManager.ADJUST_RAISE:
-                        buttonCombination.onKey(null, KeyEvent.ACTION_UP, null);
-                        break;
+            public void run() {
+                while(true){
+                    int volume = am.getStreamVolume(AudioManager.STREAM_MUSIC);
+                    Log.d(TAG, "volume: "+volume);
+                    try {
+                        Thread.sleep(1000L);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
-
-            @Override
-            public void onSetVolumeTo(int volume) {
-                Log.d(TAG, "volume set");
-                super.onSetVolumeTo(volume);
-            }
-        };
-
-        buttonEventsMediaSession.setPlaybackToRemote(vp);
-        buttonEventsMediaSession.setCallback(new MediaSession.Callback() {
-            @Override
-            public boolean onMediaButtonEvent(Intent mediaButtonIntent) {
-                Log.d(TAG, "volume change");
-                int keyCode = ((KeyEvent)mediaButtonIntent.getSerializableExtra(Intent.EXTRA_KEY_EVENT)).getKeyCode();
-                if(!buttonCombination.onKey(null, keyCode, null)){
-                    return super.onMediaButtonEvent(mediaButtonIntent);
-                }
-                return true;
-            }
-        });
-        buttonEventsMediaSession.setActive(true);
+        }.start();
     }
 
     @Override
