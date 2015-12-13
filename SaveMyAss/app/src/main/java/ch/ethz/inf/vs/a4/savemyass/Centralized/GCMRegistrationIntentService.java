@@ -49,14 +49,14 @@ public class GCMRegistrationIntentService extends IntentService {
             String token, salt;
             // check if we already have an token saved in the shared preferences or we explicitly
             // should generate a newToken because the GCMInstanceIDListener called this
-            if(!sharedPreferences.contains(Config.SHARED_PREFS_USER_ID) || newToken){
+            if(!sharedPreferences.contains(Config.SHARED_PREFS_TOKEN) || newToken){
                 InstanceID instanceID = InstanceID.getInstance(this);
                 // note: R.string.gcm_defaultSenderID is given by the google-services.json file
                 token = instanceID.getToken(getString(R.string.gcm_defaultSenderId),
                         GoogleCloudMessaging.INSTANCE_ID_SCOPE, null);
                 Log.d(TAG, "new token:" + token);
                 // save the token in the shared preferences
-                sharedPreferences.edit().putString(Config.SHARED_PREFS_USER_ID, token).apply();
+                sharedPreferences.edit().putString(Config.SHARED_PREFS_TOKEN, token).apply();
 
                 // generate salt
                 SecureRandom random = new SecureRandom();
@@ -67,7 +67,7 @@ public class GCMRegistrationIntentService extends IntentService {
             }
             // otherwise sent the token we already have to the server
             else {
-                token = sharedPreferences.getString(Config.SHARED_PREFS_USER_ID, "");
+                token = sharedPreferences.getString(Config.SHARED_PREFS_TOKEN, "");
                 salt = sharedPreferences.getString(Config.SHARED_PREFS_SALT, "");
                 Log.d(TAG, "token:" + token);
                 Log.d(TAG, "salt:" + salt);
@@ -97,7 +97,7 @@ public class GCMRegistrationIntentService extends IntentService {
      * @param token The new token.
      */
     private boolean sendRegistrationToServer(String token, String salt) {
-        Log.d(TAG, "trying to sending registration token to server " + token);
+        Log.d(TAG, "trying to send registration token to server: " + token);
         try {
             String androidId = Settings.Secure.getString(this.getContentResolver(),
                     Settings.Secure.ANDROID_ID);

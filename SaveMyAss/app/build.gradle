@@ -34,4 +34,6 @@ dependencies {
     compile 'com.firebase:firebase-client-android:2.4.0+'
     compile 'com.google.android.gms:play-services-location:8.3.0'
     compile 'com.google.android.gms:play-services-gcm:8.3.0'
+    compile 'com.github.paolorotolo:appintro:3.3.0'
+
 }

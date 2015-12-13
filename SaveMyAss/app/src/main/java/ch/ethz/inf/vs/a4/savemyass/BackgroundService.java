@@ -9,6 +9,7 @@ import android.media.VolumeProvider;
 import android.media.session.MediaSession;
 import android.os.Binder;
 import android.os.Handler;
+
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -17,15 +18,14 @@ import android.view.KeyEvent;
 import java.util.LinkedList;
 import java.util.List;
 
+import ch.ethz.inf.vs.a4.savemyass.Centralized.AlarmDistributor;
 import ch.ethz.inf.vs.a4.savemyass.Centralized.Config;
-import ch.ethz.inf.vs.a4.savemyass.Centralized.GCMReceiver;
-import ch.ethz.inf.vs.a4.savemyass.Centralized.GCMSender;
 import ch.ethz.inf.vs.a4.savemyass.Centralized.LocationTracker;
-import ch.ethz.inf.vs.a4.savemyass.Structure.InfoBundle;
 import ch.ethz.inf.vs.a4.savemyass.Structure.ServiceDestroyReceiver;
 import ch.ethz.inf.vs.a4.savemyass.Structure.SimpleAlarmDistributor;
 import ch.ethz.inf.vs.a4.savemyass.UI.ButtonCombination;
 import ch.ethz.inf.vs.a4.savemyass.UI.MediaButtonObserver;
+import ch.ethz.inf.vs.a4.savemyass.UI.AlarmNotifier;
 
 /**
  * Created by jan on 30.11.15.
@@ -40,10 +40,8 @@ public class BackgroundService extends Service{
 
     public String TAG = "###BackgroundService";
 
-    public String userID;
     public SimpleAlarmDistributor alarmDistributor, uiDistributor;
 
-    private final IBinder binder = new LocalBinder();
     private List<ServiceDestroyReceiver> serviceDestroyReceivers;
     private LocationTracker locationTracker;
 
@@ -66,31 +64,29 @@ public class BackgroundService extends Service{
     public void onCreate() {
         super.onCreate();
 
-        //todo: for the peer-to-peer approach: when you need the userID better use shared preferences
-        //directly then taking it form here, make sure to also implement the change listener
-        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        userID = sp.getString(Config.SHARED_PREFS_USER_ID, "");
-
+        // check if gcm set up correctly
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
         if(!sp.getBoolean(Config.SENT_TOKEN_TO_SERVER, false)){
-            //stopSelf();
-            Log.d(TAG, "userID is not known yet!");
+            stopSelf();
+            Log.d(TAG, "token is not sent to server yet!");
         }
 
         Log.d(TAG, "service created");
 
         // create the distributors
+        // ui Distributor notifies the UI where an alarm happened -> shows notification and opens
         uiDistributor = new SimpleAlarmDistributor();
+        uiDistributor.register(new AlarmNotifier(getApplicationContext()));
+
+        // alarm Distributor distributes a given alarm further on
         alarmDistributor = new SimpleAlarmDistributor();
 
         // set up the centralized stuff
-        locationTracker = new LocationTracker(getApplicationContext());
-        // todo: pass the ui Distributor to this receiver! -> really???
-        //GCMReceiver gcmReceiver = new GCMReceiver(uiDistributor);
-        Intent i = new Intent(getApplicationContext(), GCMReceiver.class);
-//        startService(i);
+        LocationTracker locationTracker = new LocationTracker(getApplicationContext());
 
-        GCMSender gcmSender = new GCMSender(getApplicationContext(), locationTracker);
-        alarmDistributor.register(gcmSender);
+        // todo implement this!
+        AlarmDistributor gcmDistributor = new AlarmDistributor(getApplicationContext());
+        alarmDistributor.register(gcmDistributor);
 
         // set up service destroy receivers
         serviceDestroyReceivers = new LinkedList<>();
@@ -100,7 +96,8 @@ public class BackgroundService extends Service{
         buttonCombination = new ButtonCombination(new Runnable() {
             @Override
             public void run() {
-                triggerAlarm();
+                // triggerAlarm() but you people removed this
+                Log.d(TAG, "pattern matched");
             }
         });
 
@@ -154,14 +151,6 @@ public class BackgroundService extends Service{
         buttonEventsMediaSession.setActive(true);
     }
 
-    /**
-     * creates info bundle and starts alarm
-     */
-    public void triggerAlarm() {
-        InfoBundle info = new InfoBundle(userID, locationTracker.loggedLocation);
-        alarmDistributor.distributeToSend(info);
-    }
-
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         return START_STICKY;
@@ -178,7 +167,7 @@ public class BackgroundService extends Service{
 
     @Override
     public IBinder onBind(Intent intent) {
-        return binder;
+        return null;
     }
 
 }
