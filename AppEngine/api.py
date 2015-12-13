@@ -12,7 +12,6 @@ import json
 
 FIREBASE_TOKEN = "Atllp9TRmIn1igPwvgy1cCMmCpkG5MLjkfjh1XnB"
 GSM_TOKEN = "AIzaSyArh0wY2lkLZeobveexebqwigoqCb7_Q-o"
-EARTH_RADIUS = 6371
 
 
 class Location(messages.Message):
@@ -23,6 +22,7 @@ class Location(messages.Message):
 class RegistrationRequest(messages.Message):
     token = messages.StringField(1, required=True)
     user_id = messages.StringField(2, required=True)
+    salt = messages.StringField(3, required=True)
 
 
 class RegistrationResponse(messages.Message):
@@ -32,6 +32,7 @@ class RegistrationResponse(messages.Message):
 class AlarmRequest(messages.Message):
     user_id = messages.StringField(1, required=True)
     location = messages.MessageField(Location, 2, required=True)
+    salt = messages.StringField(3, required=True)
 
 
 class AlarmResponse(messages.Message):
@@ -49,7 +50,7 @@ class SaveMyAssAPI(remote.Service):
                       name='savemyass.register')
     def register(self, request):
 
-        user_query_results = User.query(User.user_id == request.user_id).fetch()
+        user_query_results = User.query(User.user_id == request.user_id+request.salt).fetch()
         user_exists = False
         for u in user_query_results:
             u.token = request.token
@@ -57,9 +58,9 @@ class SaveMyAssAPI(remote.Service):
             user_exists = True
 
         if not user_exists:
-            User(user_id=request.user_id, token=request.token).put()
+            User(user_id=request.user_id+request.salt, token=request.token).put()
 
-        auth_payload = {"uid": request.user_id}
+        auth_payload = {"uid": request.user_id+request.salt}
         token = create_token(FIREBASE_TOKEN, auth_payload)
         return RegistrationResponse(token=token)
 
@@ -71,16 +72,17 @@ class SaveMyAssAPI(remote.Service):
         latitude = request.location.lat
         hash = "asdf"  # TODO: create the hash with geohash library
         user_id = request.user_id
+        salt = request.salt
 
         # Step 0: Check if allowed to make request
-        user_query_results = User.query(User.user_id == user_id).fetch()
+        user_query_results = User.query(User.user_id == user_id+salt).fetch()
         user = None
         for u in user_query_results:
             user = u
 
         if user is None:
             return AlarmResponse(code=300,
-                                 msg="Der Nutzer ist nicht registriert oder die Zugangsdaten sind nicht korrekt.")
+                 msg="Der Nutzer ist nicht registriert oder die Zugangsdaten sind nicht korrekt.")
 
 
 
@@ -96,16 +98,16 @@ class SaveMyAssAPI(remote.Service):
         helper_token = []
 
         for key in json.loads(loc_result.content):
-            if not key == user_id:
+            if not key == (user_id+salt):
                 helpers.append(key)
 
         if len(helpers) < 1:
-            return AlarmResponse(code=300, msg="Es wurden keine Helfer in der Nähe gefunden.")
+            return AlarmResponse(code=300, msg="Es wurden keine Helfer in der Naehe gefunden.")
 
 
         # Step 3: create the Firebase Alarm Object
         url = 'https://savemya.firebaseio.com/alarms.json?auth=' + FIREBASE_TOKEN
-        alarm_data = {"pin": {"user_id": user_id, "location": {"g": hash, "l": [longitude, latitude]}}, "helpers": []}
+        alarm_data = {"active": True, "pin": {"user_id": user_id+salt, "location": {"g": hash, "l": [longitude, latitude]}}, "helpers": []}
         alarm_result = urlfetch.fetch(url=url, method=urlfetch.POST, payload=json.dumps(alarm_data))
         if alarm_result.status_code != 200:
             return AlarmResponse(code=500, msg="Firebase Server konnte nicht angesprochen werden.")
@@ -118,16 +120,21 @@ class SaveMyAssAPI(remote.Service):
         for user in users:
             helper_token.append(user.token)
 
+        if len(helper_token) < 1:
+            return AlarmResponse(code=300, msg="Es wurden keine Helfer in der Naehe gefunden.")
+
+
         headers = {"Authorization": "key=" + GSM_TOKEN, "Content-Type": "application/json"}
-        data = {"data": {"longitude": longitude, "latitude": latitude, "node": node}, "registration_ids": helper_token}
+        data = {"data": {"longitude": longitude, "latitude": latitude, "node": node, "user": user_id}, "registration_ids": helper_token}
         gsm_result = urlfetch.fetch(url="https://gcm-http.googleapis.com/gcm/send", method=urlfetch.POST,
                                     headers=headers, payload=json.dumps(data))
         if gsm_result.status_code != 200:
+            logging.log(logging.ERROR, gsm_result.content)
             return AlarmResponse(code=500, msg="GCM Nachricht konnte nicht versendet werden.")
 
         response = json.loads(gsm_result.content)
         if response["success"] < 1:
-            return AlarmResponse(code=300, msg="Es wurden keine Helfer in der Nähe gefunden.")
+            return AlarmResponse(code=300, msg="Es wurden keine Helfer in der Naehe gefunden.")
 
         return AlarmResponse(code=200, node=node,
                              msg="Es wurden " + str(response["success"]) + " Personen benachrichtigt.")
