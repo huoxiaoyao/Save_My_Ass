@@ -21,11 +21,12 @@ import java.util.List;
 
 import ch.ethz.inf.vs.a4.savemyass.Centralized.Config;
 import ch.ethz.inf.vs.a4.savemyass.Centralized.OnGoingAlarmHelper;
+import ch.ethz.inf.vs.a4.savemyass.Structure.AlarmCancelReceiver;
 import ch.ethz.inf.vs.a4.savemyass.Structure.HelperLocationUpdate;
 import ch.ethz.inf.vs.a4.savemyass.Structure.PINInfoBundle;
 
 public class HelpOthers extends AppCompatActivity implements LocationListener, GoogleApiClient.ConnectionCallbacks,
-    GoogleApiClient.OnConnectionFailedListener{
+    GoogleApiClient.OnConnectionFailedListener, AlarmCancelReceiver{
 
     private static final String TAG = "###HepOthers";
 
@@ -68,6 +69,7 @@ public class HelpOthers extends AppCompatActivity implements LocationListener, G
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
         String firebaseUrl = sp.getString(Config.INTENT_FIREBASE_ALARM_URL, "");
         OnGoingAlarmHelper alarm = new OnGoingAlarmHelper(getApplicationContext(), firebaseUrl);
+        alarm.registerOnCancelListener(this);
         locationUpdates.add(alarm);
     }
 
@@ -140,7 +142,10 @@ public class HelpOthers extends AppCompatActivity implements LocationListener, G
         accepted = true;
         for (HelperLocationUpdate l : locationUpdates)
             l.onHelperLocationUpdate(lastLocation);
-
     }
 
+    @Override
+    public void onCancel() {
+        log.setText(log.getText()+"\n- alarm has been cancelled");
+    }
 }

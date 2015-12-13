@@ -4,12 +4,17 @@ import android.content.Context;
 import android.location.Location;
 import android.util.Log;
 
+import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
 import com.firebase.geofire.GeoLocation;
 import com.firebase.geofire.GeoQuery;
 import com.firebase.geofire.GeoQueryEventListener;
 
+import java.util.HashMap;
+
+import ch.ethz.inf.vs.a4.savemyass.HelpRequest;
 import ch.ethz.inf.vs.a4.savemyass.HelperMapCombiner;
+import ch.ethz.inf.vs.a4.savemyass.Structure.AlarmCancelReceiver;
 import ch.ethz.inf.vs.a4.savemyass.Structure.HelperInfoBundle;
 import ch.ethz.inf.vs.a4.savemyass.Structure.PINInfoBundle;
 
@@ -20,18 +25,17 @@ import ch.ethz.inf.vs.a4.savemyass.Structure.PINInfoBundle;
  *
  * - Gets updates from firebase and displays them.
  */
-public class OnGoingAlarmPIN extends OnGoingAlarm {
+public class OnGoingAlarmPIN extends OnGoingAlarm implements AlarmCancelReceiver {
 
     protected static final String TAG = "###OnGoingASPIN";
 
     private HelperMapCombiner mapCombiner;
 
-    public OnGoingAlarmPIN(Context ctx, String firebaseURL, PINInfoBundle pinInfoBundle, HelperMapCombiner mapCombiner) {
+    public OnGoingAlarmPIN(Context ctx, String firebaseURL, PINInfoBundle pinInfoBundle, HelperMapCombiner mapCombiner, HelpRequest requestActivity) {
         super(ctx, firebaseURL, pinInfoBundle);
         this.mapCombiner = mapCombiner;
+        requestActivity.registerOnCancelReceiver(this);
     }
-
-
 
     @Override
     void onGeoFireRefReady() {
@@ -73,5 +77,13 @@ public class OnGoingAlarmPIN extends OnGoingAlarm {
                 Log.d(TAG, "There was an error with this query: " + error);
             }
         });
+    }
+
+    @Override
+    public void onCancel() {
+        Firebase firebaseRef = new Firebase(firebaseURL);
+        HashMap<String, Object> map = new HashMap<>();
+        map.put("active", false);
+        firebaseRef.getParent().updateChildren(map);
     }
 }

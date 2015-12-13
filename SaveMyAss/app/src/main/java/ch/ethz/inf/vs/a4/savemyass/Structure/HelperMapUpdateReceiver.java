@@ -7,6 +7,6 @@ package ch.ethz.inf.vs.a4.savemyass.Structure;
  */
 public interface HelperMapUpdateReceiver {
 
+    // gets called when the helper map got updated...
     void onUpdate();
-
 }

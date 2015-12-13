@@ -7,6 +7,8 @@ import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -16,9 +18,12 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 
 import ch.ethz.inf.vs.a4.savemyass.Centralized.AlarmRequestSender;
 import ch.ethz.inf.vs.a4.savemyass.Centralized.Config;
+import ch.ethz.inf.vs.a4.savemyass.Structure.AlarmCancelReceiver;
 import ch.ethz.inf.vs.a4.savemyass.Structure.HelperMapUpdateReceiver;
 import ch.ethz.inf.vs.a4.savemyass.Structure.PINInfoBundle;
 import ch.ethz.inf.vs.a4.savemyass.Structure.SimpleAlarmDistributor;
@@ -34,6 +39,7 @@ public class HelpRequest extends AppCompatActivity implements LocationListener, 
 
     // entry point for Google Play services (used for getting the location)
     protected GoogleApiClient mGoogleApiClient;
+    private List<AlarmCancelReceiver> alarmCancelReceivers;
 
 
     @Override
@@ -50,10 +56,20 @@ public class HelpRequest extends AppCompatActivity implements LocationListener, 
         // create the map combiner
         mapCombiner = new HelperMapCombiner();
 
+        // list of cancel receivers
+        alarmCancelReceivers = new LinkedList<>();
 
         // set up the alarm senders
         alarmSender = new SimpleAlarmDistributor();
-        alarmSender.register(new AlarmRequestSender(getApplicationContext(), mapCombiner));
+        alarmSender.register(new AlarmRequestSender(getApplicationContext(), mapCombiner, this));
+
+        Button cancel = (Button) findViewById(R.id.cancel);
+        cancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                cancelAlarm();
+            }
+        });
     }
 
     @Override
@@ -80,6 +96,11 @@ public class HelpRequest extends AppCompatActivity implements LocationListener, 
     private void onInfoBundleReady(PINInfoBundle infoBundle){
         // distribute the alarm to the registered senders
         alarmSender.distributeToSend(infoBundle);
+    }
+
+    public void registerOnCancelReceiver(AlarmCancelReceiver receiver){
+        alarmCancelReceivers.add(receiver);
+
     }
 
     // creates location request
@@ -145,5 +166,13 @@ public class HelpRequest extends AppCompatActivity implements LocationListener, 
         log.setText("Log:\ngot an update of some helper locations:");
         for(Location l : newMap.values())
             log.setText(log.getText()+"\n  - "+l.toString());
+    }
+
+    /**
+     *  call this to cancel the alarm
+     */
+    public void cancelAlarm(){
+        for(AlarmCancelReceiver r : alarmCancelReceivers)
+            r.onCancel();
     }
 }

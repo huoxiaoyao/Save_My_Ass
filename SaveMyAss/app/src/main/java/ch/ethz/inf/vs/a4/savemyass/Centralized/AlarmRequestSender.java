@@ -6,6 +6,7 @@ import android.util.Log;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import ch.ethz.inf.vs.a4.savemyass.HelpRequest;
 import ch.ethz.inf.vs.a4.savemyass.HelperMapCombiner;
 
 
@@ -17,10 +18,12 @@ import ch.ethz.inf.vs.a4.savemyass.HelperMapCombiner;
 public class AlarmRequestSender extends AbstractAlarmRequestSender implements ResponseListener {
 
     private HelperMapCombiner mapCombiner;
-    public AlarmRequestSender(Context ctx, HelperMapCombiner mapCombiner) {
+    private HelpRequest requestActivity;
+    public AlarmRequestSender(Context ctx, HelperMapCombiner mapCombiner, HelpRequest requestActivity) {
         super(ctx);
         setResponseListener(this);
         this.mapCombiner = mapCombiner;
+        this.requestActivity = requestActivity;
     }
 
 
@@ -34,7 +37,7 @@ public class AlarmRequestSender extends AbstractAlarmRequestSender implements Re
                 String firebaseUrl = json.getString("node");
                 firebaseUrl = Config.FIREBASE_BASE_ADDRESS+"alarms/"+firebaseUrl+"/";
                 firebaseUrl = firebaseUrl+"helpers/";
-                new OnGoingAlarmPIN(ctx, firebaseUrl, infoBundle, mapCombiner);
+                new OnGoingAlarmPIN(ctx, firebaseUrl, infoBundle, mapCombiner, requestActivity);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
