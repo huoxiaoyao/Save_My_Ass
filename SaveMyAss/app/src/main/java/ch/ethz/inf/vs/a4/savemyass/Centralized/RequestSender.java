@@ -82,6 +82,9 @@ public class RequestSender {
         new AsyncWorker().execute(json);
     }
 
+    /**
+     * implementation for sending a request from another thread
+     */
     public JSONObject sendRequest(JSONObject json){
         // create a new HttpClient and post header
         HttpClient httpclient = new DefaultHttpClient();

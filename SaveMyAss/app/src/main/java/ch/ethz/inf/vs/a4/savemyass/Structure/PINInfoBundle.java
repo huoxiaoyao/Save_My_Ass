@@ -13,7 +13,7 @@ import org.json.JSONObject;
 public class PINInfoBundle implements Parcelable {
 
     public final String userID;
-    public final Location loc;
+    public Location loc;
     public final String message;
 
     public PINInfoBundle(String userID, Location loc, String message){

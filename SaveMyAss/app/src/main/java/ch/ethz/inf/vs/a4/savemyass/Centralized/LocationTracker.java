@@ -37,9 +37,11 @@ public class LocationTracker implements LocationListener, GoogleApiClient.Connec
 
     private Context ctx;
     private ConnectivityManager cm;
+    private int priority;
 
     // the ID of the user
     private String userID;
+    private String salt;
 
     // entry point for Google Play services (used for getting the location)
     protected GoogleApiClient mGoogleApiClient;
@@ -50,9 +52,10 @@ public class LocationTracker implements LocationListener, GoogleApiClient.Connec
 
     private static final String TAG = "###LocationTracker";
 
-    // constructor
-    public LocationTracker(Context ctx){
+    // constructors
+    public LocationTracker(Context ctx, int priority){
         this.ctx = ctx;
+        this.priority = priority;
 
         // get userID
         this.userID = Settings.Secure.getString(ctx.getContentResolver(), Settings.Secure.ANDROID_ID);
@@ -67,6 +70,9 @@ public class LocationTracker implements LocationListener, GoogleApiClient.Connec
         // connectivity manager initialization, used for hasInternet
         cm = (ConnectivityManager) ctx.getSystemService(Context.CONNECTIVITY_SERVICE);
     }
+    public LocationTracker(Context ctx){
+        this(ctx, LocationRequest.PRIORITY_LOW_POWER);
+    }
 
     private synchronized void buildGoogleApiClient() {
         mGoogleApiClient = new GoogleApiClient.Builder(ctx)
@@ -80,7 +86,7 @@ public class LocationTracker implements LocationListener, GoogleApiClient.Connec
         LocationRequest mLocationRequest = new LocationRequest();
         mLocationRequest.setInterval(Config.LOCATION_TRACKER_UPDATE_PERIOD);
         mLocationRequest.setFastestInterval(Config.LOCATION_TRACKER_UPDATE_PERIOD_MIN);
-        mLocationRequest.setPriority(LocationRequest.PRIORITY_LOW_POWER);
+        mLocationRequest.setPriority(priority);
         return mLocationRequest;
     }
 
@@ -97,8 +103,11 @@ public class LocationTracker implements LocationListener, GoogleApiClient.Connec
      * Saves location in firebase
      */
     private void sendLocation(Location loc){
+
+        Log.d(TAG, "updating location in firebase");
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(ctx);
         String firebaseAuthToken = sp.getString(Config.SHARED_PREFS_FIREBASE_AUTH, "");
+        salt = sp.getString(Config.SHARED_PREFS_SALT, "");
         Firebase firebaseRef = new Firebase(Config.FIREBASE_LOCATION_TRACKING);
         firebaseRef.authWithCustomToken(firebaseAuthToken, new MyAuthResultHandler(firebaseRef, loc));
     }
@@ -119,7 +128,7 @@ public class LocationTracker implements LocationListener, GoogleApiClient.Connec
         public void onAuthenticated(AuthData authData) {
             GeoLocation gLoc = new GeoLocation(loc.getLatitude(), loc.getLongitude());
             GeoFire geoFire = new GeoFire(firebaseRef);
-            geoFire.setLocation(userID, gLoc);
+            geoFire.setLocation(userID+salt, gLoc);
             lastSentLocation = loc;
             Log.d(TAG, "successfully saved location in firebase");
         }
@@ -133,10 +142,10 @@ public class LocationTracker implements LocationListener, GoogleApiClient.Connec
     /**
      * Checks if the location is far enough away from the last one sent, and sends it in that case
      */
-    private void checkLocationAndUpdate(Location lastLocation) {
+    private void checkLocationAndUpdate(Location newLocation) {
         Log.d(TAG, "checking if updating location in firebase is needed");
-        if (lastLocation != null) {
-            loggedLocation = lastLocation;
+        if (newLocation != null) {
+            loggedLocation = newLocation;
             if (lastSentLocation == null) {
                 checkInternetAndSend(loggedLocation);
             }
@@ -145,6 +154,9 @@ public class LocationTracker implements LocationListener, GoogleApiClient.Connec
                 checkInternetAndSend(loggedLocation);
             }
         }
+        else{
+            checkInternetAndSend(Config.DUMMY_LOC());
+        }
     }
 
     /**
@@ -152,7 +164,6 @@ public class LocationTracker implements LocationListener, GoogleApiClient.Connec
      */
     private void checkInternetAndSend(Location loc){
         if(hasInternet()) {
-            Log.d(TAG, "updating location in firebase...");
             sendLocation(loc);
         }
         else {

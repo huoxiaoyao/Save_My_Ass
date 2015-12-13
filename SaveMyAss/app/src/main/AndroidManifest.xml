@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="ch.ethz.inf.vs.a4.savemyass">
+    package="ch.ethz.inf.vs.a4.savemyass" >
 
     <!-- Location service and Internet availability -->
     <uses-permission android:name="android.permission.INTERNET" />
@@ -10,64 +10,65 @@
     <!-- GCM stuff -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
-
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme">
-
-        <activity android:name=".MainActivity">
+        android:theme="@style/AppTheme" >
+        <activity android:name=".MainActivity" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
-        <!--GCM receiver-->
+        <!-- GCM receiver -->
         <receiver
             android:name="com.google.android.gms.gcm.GcmReceiver"
             android:exported="true"
             android:permission="com.google.android.c2dm.permission.SEND" >
             <intent-filter>
                 <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+
                 <category android:name=".Centralized" />
             </intent-filter>
         </receiver>
 
-        <!-- BootComplete receiver-->
-        <receiver android:name=".ServiceStarter">
+        <!-- BootComplete receiver -->
+        <receiver android:name=".ServiceStarter" >
             <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
 
-        <!--Background Service-->
+        <!-- Background Service -->
         <service
             android:name=".BackgroundService"
             android:enabled="true"
             android:exported="true" />
 
-        <!--GCM Id change listener-->
+        <!-- GCM Id change listener -->
         <service
             android:name=".Centralized.GCMInstanceIDListener"
-            android:exported="false">
+            android:exported="false" >
             <intent-filter>
                 <action android:name="com.google.android.gms.iid.InstanceID" />
             </intent-filter>
         </service>
 
-        <!--GCM Registration IntentService-->
+        <!-- GCM Registration IntentService -->
         <service
             android:name=".Centralized.GCMRegistrationIntentService"
             android:exported="false" />
 
-        <!--GCM receiver-->
-       <service android:name=".Centralized.GCMReceiver"
-        android:exported="false" >
+        <!-- GCM receiver -->
+        <service
+            android:name=".Centralized.GCMReceiver"
+            android:exported="false" >
             <intent-filter>
                 <action android:name="com.google.android.c2dm.intent.RECEIVE" />
             </intent-filter>
@@ -75,7 +76,6 @@
 
         <activity android:name=".HelpRequest" />
         <activity android:name=".HelpOthers" />
-
     </application>
 
 </manifest>
