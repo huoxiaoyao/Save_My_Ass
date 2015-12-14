@@ -91,6 +91,9 @@ private class MyAuthResultHandler implements Firebase.AuthResultHandler{
 
     @Override
     public void onAuthenticated(AuthData authData) {
+        // for the emulator
+        if(loc == null)
+            loc = Config.DUMMY_LOC();
         GeoLocation gLoc = new GeoLocation(loc.getLatitude(), loc.getLongitude());
         GeoFire geoFire = new GeoFire(firebaseRef);
         geoFire.setLocation(userID, gLoc);

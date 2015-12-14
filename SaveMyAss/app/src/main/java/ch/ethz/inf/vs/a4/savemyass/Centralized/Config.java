@@ -31,18 +31,20 @@ public class Config {
 
     // time and distance thresholds
     // todo: replace those with reasonable values!
-    public static int LOCATION_TRACKER_UPDATE_PERIOD = 20*1000; //in ms -> maximum time between two location updates
-    public static int LOCATION_TRACKER_UPDATE_PERIOD_MIN = 10*1000; //in ms -> we won't get more location updates than that
-    public static float LOCATION_TRACKER_SEND_DISTANCE_THRESHOLD = 100; //in m
-    public static int ALARM_DISTANCE_THRESHOLD = 10; //in km
-    public static int MIN_PERIOD_BETWEEN_TWO_ALARMS = 10 * 60 * 1000; // in ms -> this only applies for the same person
+    public static int LOCATION_TRACKER_UPDATE_PERIOD = 60*1000; //in ms -> maximum time between two location updates
+    public static int LOCATION_TRACKER_UPDATE_PERIOD_MIN = 30*1000; //in ms -> we won't get more location updates than that
+    public static float LOCATION_TRACKER_SEND_DISTANCE_THRESHOLD = 100; //in m -> we don't update the location in firebase if the delta is smaller than this.
+    public static int ALARM_DISTANCE_THRESHOLD = 10; //in km - the distance to the PIN in which the watchdog might consider triggering an alarm
     public static int IGNORE_OTHER_LOCATION_THRESHOLD = 10 * 1000; // in km
+    public static int WATCHDOG_RESPOND_COUNT_THRESHOLD = 2; //so many people need to accept before we stop increasing the radius...
+    public static double[] WATCHDOG_RADIUS = {0.15, 0.25, 0.5, ALARM_DISTANCE_THRESHOLD};//the steps that the watchdog makes when increasing the radius around the person in need
+    public static int[] WATCHDOG_TIMES = {10, 10, 10}; //after the first element seconds the radius will be increased to the second radius value above and so on...
 
     // dummy location used for triggering alarms in the emulator
     public static Location DUMMY_LOC() {
         Location loc = new Location("");
-        loc.setLatitude(47.3779435);
-        loc.setLongitude(8.5401977);
+        loc.setLatitude(47.411492);
+        loc.setLongitude(8.544242);
         return loc;
     }
 }

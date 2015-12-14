@@ -146,6 +146,7 @@ public class HelpOthers extends AppCompatActivity implements LocationListener, G
 
     @Override
     public void onCancel() {
+        mGoogleApiClient.disconnect();
         log.setText(log.getText()+"\n- alarm has been cancelled");
     }
 }

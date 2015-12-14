@@ -37,7 +37,6 @@ public class LocationTracker implements LocationListener, GoogleApiClient.Connec
 
     private Context ctx;
     private ConnectivityManager cm;
-    private int priority;
 
     // the ID of the user
     private String userID;
@@ -53,9 +52,8 @@ public class LocationTracker implements LocationListener, GoogleApiClient.Connec
     private static final String TAG = "###LocationTracker";
 
     // constructors
-    public LocationTracker(Context ctx, int priority){
+    public LocationTracker(Context ctx){
         this.ctx = ctx;
-        this.priority = priority;
 
         // get userID
         this.userID = Settings.Secure.getString(ctx.getContentResolver(), Settings.Secure.ANDROID_ID);
@@ -70,9 +68,6 @@ public class LocationTracker implements LocationListener, GoogleApiClient.Connec
         // connectivity manager initialization, used for hasInternet
         cm = (ConnectivityManager) ctx.getSystemService(Context.CONNECTIVITY_SERVICE);
     }
-    public LocationTracker(Context ctx){
-        this(ctx, LocationRequest.PRIORITY_LOW_POWER);
-    }
 
     private synchronized void buildGoogleApiClient() {
         mGoogleApiClient = new GoogleApiClient.Builder(ctx)
@@ -86,7 +81,7 @@ public class LocationTracker implements LocationListener, GoogleApiClient.Connec
         LocationRequest mLocationRequest = new LocationRequest();
         mLocationRequest.setInterval(Config.LOCATION_TRACKER_UPDATE_PERIOD);
         mLocationRequest.setFastestInterval(Config.LOCATION_TRACKER_UPDATE_PERIOD_MIN);
-        mLocationRequest.setPriority(priority);
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_LOW_POWER);
         return mLocationRequest;
     }
 

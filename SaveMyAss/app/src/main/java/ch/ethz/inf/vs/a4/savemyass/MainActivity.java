@@ -26,6 +26,9 @@ public class MainActivity extends AppCompatActivity {
 
     protected final String TAG = "###MainActivity";
 
+    private static final int ACCOUNTS_PERMISSION = 1;
+    private static final int LOCATION_PERMISSION = 2;
+
     private BroadcastReceiver RegistrationBroadcastReceiver;
 
     private ProgressBar RegistrationProgressBar;
@@ -39,35 +42,39 @@ public class MainActivity extends AppCompatActivity {
         // dummy log for development purposes
         log = (TextView) findViewById(R.id.log);
 
-        if (ContextCompat.checkSelfPermission(this,
-                Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED){
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
-            finish();
+        boolean location, contacts;
+        location = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED;
+        contacts = ContextCompat.checkSelfPermission(this, Manifest.permission.GET_ACCOUNTS)
+                == PackageManager.PERMISSION_GRANTED;
+        if (!(location && contacts)){
+            if(!location)
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION);
+            else
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.GET_ACCOUNTS}, ACCOUNTS_PERMISSION);
         }
-        if(ContextCompat.checkSelfPermission(this,
-                Manifest.permission.GET_ACCOUNTS)
-                != PackageManager.PERMISSION_GRANTED){
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.GET_ACCOUNTS}, 2);
-            finish();
+        else {
+            // only gets executed if all permissions are set
+            initializeCentralized();
+            Intent i = new Intent(getApplicationContext(), BackgroundService.class);
+            startService(i);
+
+            // alarm trigger button
+            Button alarm = (Button) findViewById(R.id.triggerAlarm);
+            alarm.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent i = new Intent(getApplicationContext(), HelpRequest.class);
+                    startActivity(i);
+                }
+            });
         }
+    }
 
-        // only gets executed if all permissions are set
-        initializeCentralized();
-        Intent i = new Intent(getApplicationContext(), BackgroundService.class);
-        startService(i);
-
-        // alarm trigger button
-        Button alarm = (Button) findViewById(R.id.triggerAlarm);
-        alarm.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent i = new Intent(getApplicationContext(), HelpRequest.class);
-                startActivity(i);
-            }
-        });
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        this.recreate();
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
     /**
@@ -83,9 +90,6 @@ public class MainActivity extends AppCompatActivity {
         // progress bar that is used for the registration for the centralized approach
         RegistrationProgressBar = (ProgressBar) findViewById(R.id.registrationProgressBar);
         if(!sharedPreferences.getBoolean(Config.SENT_TOKEN_TO_SERVER, false)){
-            Intent i = new Intent(this, GCMRegistrationIntentService.class);
-            startService(i);
-            Log.d(TAG, "GCMRegistrationIntentService has been started");
             // broadcast receiver that gets event as soon as server responded...
             RegistrationBroadcastReceiver = new BroadcastReceiver() {
                 @Override
@@ -102,6 +106,9 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
             };
+            Intent i = new Intent(this, GCMRegistrationIntentService.class);
+            startService(i);
+            Log.d(TAG, "GCMRegistrationIntentService has been started");
         }
         else{
             log.setText(log.getText()+"\n- centralized version is already up and running!");

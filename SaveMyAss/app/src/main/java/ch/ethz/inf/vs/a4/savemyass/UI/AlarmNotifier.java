@@ -45,7 +45,8 @@ public class AlarmNotifier implements AlarmSender {
                         .setSmallIcon(R.mipmap.ic_launcher)
                         .setContentTitle(title)
                         .setContentText(bundle.toString())
-                        .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
+                        .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
+                        .setAutoCancel(true);
         Intent resultIntent = new Intent(ctx, HelpOthers.class);
         // pass the infobundle as an extra to the activity
         resultIntent.putExtra(Config.INTENT_INFO_BUNDLE, bundle);

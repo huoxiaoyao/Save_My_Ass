@@ -174,5 +174,6 @@ public class HelpRequest extends AppCompatActivity implements LocationListener, 
     public void cancelAlarm(){
         for(AlarmCancelReceiver r : alarmCancelReceivers)
             r.onCancel();
+        mGoogleApiClient.disconnect();
     }
 }

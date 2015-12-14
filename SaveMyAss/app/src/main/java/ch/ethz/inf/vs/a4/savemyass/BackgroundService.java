@@ -1,6 +1,9 @@
 package ch.ethz.inf.vs.a4.savemyass;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.IBinder;
@@ -65,6 +68,16 @@ public class BackgroundService extends Service{
         // set up service destroy receivers
         serviceDestroyReceivers = new LinkedList<>();
         serviceDestroyReceivers.add(locationTracker);
+
+        // register alarm manager to check if service is running and start it in cases it's no yet
+        // running (done in WakefulServiceStarter)
+        AlarmManager alarmMgr = (AlarmManager) getApplicationContext().getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent(getApplicationContext(), WakefulServiceStarter.class);
+        PendingIntent alarmIntent = PendingIntent.getBroadcast(getApplicationContext(), 0, intent, 0);
+
+        alarmMgr.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                AlarmManager.INTERVAL_FIFTEEN_MINUTES,
+                AlarmManager.INTERVAL_FIFTEEN_MINUTES, alarmIntent);
     }
 
     @Override

@@ -45,6 +45,9 @@
             </intent-filter>
         </receiver>
 
+        <!-- periodic receiver -->
+        <receiver android:name=".WakefulServiceStarter"/>
+
         <!-- Background Service -->
         <service
             android:name=".BackgroundService"
