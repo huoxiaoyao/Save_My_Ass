@@ -7,6 +7,8 @@ import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -48,7 +50,7 @@ public class HelpRequest extends AppCompatActivity implements OnMapReadyCallback
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_help_request_map);
+        setContentView(R.layout.activity_maps);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -68,13 +70,14 @@ public class HelpRequest extends AppCompatActivity implements OnMapReadyCallback
         alarmSender = new SimpleAlarmDistributor();
         alarmSender.register(new AlarmRequestSender(getApplicationContext(), mapCombiner, this));
 
-/*        Button cancel = (Button) findViewById(R.id.cancel);
+        markers = new HashMap<>();
+        Button cancel = (Button) findViewById(R.id.cancel);
         cancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 cancelAlarm();
             }
-        });*/
+        });
     }
 
 
@@ -90,11 +93,7 @@ public class HelpRequest extends AppCompatActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-
-        // Add a marker in Sydney and move the camera
-       // LatLng sydney = new LatLng(-34, 151);
-        //mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-        //mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+        mMap.setMyLocationEnabled(true);
     }
 
     @Override
@@ -210,5 +209,6 @@ public class HelpRequest extends AppCompatActivity implements OnMapReadyCallback
         for(AlarmCancelReceiver r : alarmCancelReceivers)
             r.onCancel();
         mGoogleApiClient.disconnect();
+        finish();
     }
 }

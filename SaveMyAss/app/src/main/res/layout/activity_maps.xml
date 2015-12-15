@@ -25,6 +25,5 @@
         android:layout_weight=".20"
         android:text="Abort"
         style="@style/button_text_2"
-        android:onClick="onClick"
-        />
+        android:id="@+id/cancel" />
     </LinearLayout>

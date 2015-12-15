@@ -13,12 +13,11 @@
 
     <Button
         android:background="@drawable/red_button"
-        android:id="@+id/button1"
+        android:id="@+id/triggerAlarm"
         android:layout_width="fill_parent"
         android:layout_height="300dp"
         android:text="Alarm"
         style="@style/button_text"
-        android:onClick="alarmClick"
         android:layout_centerInParent="true"
         />
 

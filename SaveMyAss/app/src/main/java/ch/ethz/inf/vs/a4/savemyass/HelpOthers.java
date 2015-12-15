@@ -9,7 +9,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -39,7 +39,6 @@ public class HelpOthers extends AppCompatActivity implements OnMapReadyCallback,
     private static final String TAG = "###HepOthers";
 
     private GoogleMap mMap;
-    private TextView log;
     private PINInfoBundle infoBundle;
     private Button accept;
     private List<HelperLocationUpdate> locationUpdates;
@@ -52,7 +51,7 @@ public class HelpOthers extends AppCompatActivity implements OnMapReadyCallback,
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_maps);
+        setContentView(R.layout.activity_help_request_map);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -60,11 +59,19 @@ public class HelpOthers extends AppCompatActivity implements OnMapReadyCallback,
 
         infoBundle = getIntent().getParcelableExtra(Config.INTENT_INFO_BUNDLE);
 
-        //accept = (Button) findViewById(R.id.accept);
+        accept = (Button) findViewById(R.id.accept);
         accept.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 HelpOthers.this.onAccept();
+            }
+        });
+
+        Button decline = (Button) findViewById(R.id.decline);
+        decline.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
             }
         });
 
@@ -100,6 +107,7 @@ public class HelpOthers extends AppCompatActivity implements OnMapReadyCallback,
         LatLng pin = new LatLng(infoBundle.loc.getLatitude(), infoBundle.loc.getLongitude());
         mMap.addMarker(new MarkerOptions().position(pin).title("Person in need of help"));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(pin));
+        mMap.setMyLocationEnabled(true);
     }
 
     public void onClick(View v){
@@ -171,7 +179,6 @@ public class HelpOthers extends AppCompatActivity implements OnMapReadyCallback,
 
 
     private void onAccept(){
-        log.setText(log.getText()+"\n- accepted alarm");
         accept.setClickable(false);
         accepted = true;
         for (HelperLocationUpdate l : locationUpdates)
@@ -181,7 +188,10 @@ public class HelpOthers extends AppCompatActivity implements OnMapReadyCallback,
     @Override
     public void onCancel() {
         mGoogleApiClient.disconnect();
-        log.setText(log.getText() + "\n- alarm has been cancelled");
+        String text = getString(R.string.alarm_cancelled);
+        Toast toast = Toast.makeText(getApplicationContext(), text, Toast.LENGTH_LONG);
+        toast.show();
+        finish();
     }
 }
 

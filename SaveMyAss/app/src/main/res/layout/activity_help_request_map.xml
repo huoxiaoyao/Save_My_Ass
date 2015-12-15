@@ -40,6 +40,7 @@
         android:layout_width="0dp"
         android:layout_height="fill_parent"
         android:layout_weight=".5"
+        android:id="@+id/accept"
         android:text="Accept"
         style="@style/button_text_2"
         />
@@ -50,7 +51,7 @@
         android:layout_weight=".5"
         android:text="Decline"
         style="@style/button_text_2"
-        />
+        android:id="@+id/decline" />
 </LinearLayout>
 
     </LinearLayout>

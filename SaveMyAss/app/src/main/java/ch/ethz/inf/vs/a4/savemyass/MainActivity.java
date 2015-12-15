@@ -27,7 +27,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
-import android.widget.TextView;
 
 import ch.ethz.inf.vs.a4.savemyass.Centralized.Config;
 import ch.ethz.inf.vs.a4.savemyass.Centralized.GCMRegistrationIntentService;
@@ -43,7 +42,6 @@ public class MainActivity extends AppCompatActivity
     private BroadcastReceiver RegistrationBroadcastReceiver;
 
     private ProgressBar RegistrationProgressBar;
-    protected TextView log;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,8 +73,7 @@ public class MainActivity extends AppCompatActivity
             alarm.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Intent i = new Intent(getApplicationContext(), HelpRequest.class);
-                    startActivity(i);
+                    showSimplePopUp();
                 }
             });
         }
@@ -111,6 +108,7 @@ public class MainActivity extends AppCompatActivity
         //sharedPreferences.edit().putBoolean(Config.SENT_TOKEN_TO_SERVER, false).apply();
 
         // progress bar that is used for the registration for the centralized approach
+        // todo add the progress bar to the layout
         //RegistrationProgressBar = (ProgressBar) findViewById(R.id.registrationProgressBar);
         if(!sharedPreferences.getBoolean(Config.SENT_TOKEN_TO_SERVER, false)){
             // broadcast receiver that gets event as soon as server responded...
@@ -120,13 +118,13 @@ public class MainActivity extends AppCompatActivity
                     RegistrationProgressBar.setVisibility(ProgressBar.GONE);
                     SharedPreferences sp =  PreferenceManager.getDefaultSharedPreferences(context);
                     boolean sentToken = sp.getBoolean(Config.SENT_TOKEN_TO_SERVER, false);
-                    if (sentToken) {
+                    /*if (sentToken) {
                         log.setText(log.getText()+"\n- token begins with: "+sp.getString(Config.SHARED_PREFS_TOKEN, "").substring(0,10));
                         log.setText(log.getText()+"\n- token sent! centralized version is up and running!");
                     } else {
                         log.setText(log.getText()+"\n- error while sending token, NOTIFY THE USER " +
                                 "SOMEHOW, he should: close app, make sure internet is enabled and retry");
-                    }
+                    }*/
                 }
             };
             Intent i = new Intent(this, GCMRegistrationIntentService.class);
@@ -134,8 +132,7 @@ public class MainActivity extends AppCompatActivity
             Log.d(TAG, "GCMRegistrationIntentService has been started");
         }
         else{
-            log.setText(log.getText()+"\n- centralized version is already up and running!");
-            RegistrationProgressBar.setVisibility(ProgressBar.GONE);
+            //RegistrationProgressBar.setVisibility(ProgressBar.GONE);
         }
     }
 
@@ -225,8 +222,8 @@ public class MainActivity extends AppCompatActivity
                 new DialogInterface.OnClickListener() {
 
                     public void onClick(DialogInterface dialog, int which) {
-                        // Do nothing but
-                        // close the dialog
+                        Intent i = new Intent(getApplicationContext(), HelpRequest.class);
+                        startActivity(i);
                     }
                 }
         );
