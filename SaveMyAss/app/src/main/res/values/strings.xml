@@ -14,6 +14,6 @@
     <string name="title_activity_button_combination">Button Combination</string>
     <string name="title_activity_on__off_mode">On/Off Mode</string>
     <string name="alarm_cancelled">The alarm has been cancelled</string>
-
+    <string name="restart_with_internet">Please restart the app with internet available in order to register properly to the Service.</string>
     <string name="hint">Example: Allergic to peanuts</string>
 </resources>

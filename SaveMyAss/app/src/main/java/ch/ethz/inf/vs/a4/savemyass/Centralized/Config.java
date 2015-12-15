@@ -23,6 +23,8 @@ public class Config {
     public static String SHARED_PREFS_SALT = "gcm_salt";
     public static String SHARED_PREFS_FIREBASE_AUTH = "firebase_auth";
     public static String SHARED_PREFS_USER_MESSAGE = "user_message";
+    public static String SHARED_PREFS_CENTRALIZED_ACTIVE = "centralized_active";
+    public static String SHARED_PREFS_P2P_ACTIVE = "p2p_active";
 
     // Intent extra strings
     public static String INTENT_NEW_TOKEN = "newToken";
@@ -39,6 +41,7 @@ public class Config {
     public static int WATCHDOG_RESPOND_COUNT_THRESHOLD = 2; //so many people need to accept before we stop increasing the radius...
     public static double[] WATCHDOG_RADIUS = {0.15, 0.25, 0.5, ALARM_DISTANCE_THRESHOLD};//the steps that the watchdog makes when increasing the radius around the person in need
     public static int[] WATCHDOG_TIMES = {1, 1, 1}; //after the first element seconds the radius will be increased to the second radius value above and so on...
+
 
     // dummy location used for triggering alarms in the emulator
     public static Location DUMMY_LOC() {

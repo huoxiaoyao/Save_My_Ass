@@ -175,6 +175,7 @@ public class LocationTracker implements LocationListener, GoogleApiClient.Connec
      */
     @Override
     public void onServiceDestroy() {
+        Log.d(TAG, "stopping location tracking");
         if (mGoogleApiClient.isConnected()) {
             mGoogleApiClient.disconnect();
         }

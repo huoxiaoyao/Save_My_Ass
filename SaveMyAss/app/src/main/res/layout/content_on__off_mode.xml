@@ -19,10 +19,11 @@
     <Switch
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/toggleButton"
+        android:id="@+id/serverConnection"
         android:layout_alignBottom="@+id/textView2"
         android:layout_alignParentStart="true"
-        android:layout_marginStart="118dp" />
+        android:layout_marginStart="118dp"
+        android:checked="false" />
 
     <TextView
         android:layout_width="fill_parent"
@@ -36,9 +37,9 @@
     <Switch
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-
-        android:id="@+id/toggleButton2"
+        android:id="@+id/p2pConnection"
         android:layout_alignBottom="@+id/textView"
-        android:layout_alignStart="@+id/toggleButton" />
+        android:layout_alignStart="@+id/serverConnection"
+        android:checked="false" />
 
 </RelativeLayout>

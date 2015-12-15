@@ -27,6 +27,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import ch.ethz.inf.vs.a4.savemyass.Centralized.Config;
 import ch.ethz.inf.vs.a4.savemyass.Centralized.GCMRegistrationIntentService;
@@ -115,16 +116,15 @@ public class MainActivity extends AppCompatActivity
             RegistrationBroadcastReceiver = new BroadcastReceiver() {
                 @Override
                 public void onReceive(Context context, Intent intent) {
-                    RegistrationProgressBar.setVisibility(ProgressBar.GONE);
+                    //RegistrationProgressBar.setVisibility(ProgressBar.GONE);
                     SharedPreferences sp =  PreferenceManager.getDefaultSharedPreferences(context);
                     boolean sentToken = sp.getBoolean(Config.SENT_TOKEN_TO_SERVER, false);
-                    /*if (sentToken) {
-                        log.setText(log.getText()+"\n- token begins with: "+sp.getString(Config.SHARED_PREFS_TOKEN, "").substring(0,10));
-                        log.setText(log.getText()+"\n- token sent! centralized version is up and running!");
-                    } else {
-                        log.setText(log.getText()+"\n- error while sending token, NOTIFY THE USER " +
-                                "SOMEHOW, he should: close app, make sure internet is enabled and retry");
-                    }*/
+                    boolean centralized = sp.getBoolean(Config.SHARED_PREFS_CENTRALIZED_ACTIVE, false);
+                    if(centralized && !sentToken){
+                        String text = getString(R.string.restart_with_internet);
+                        Toast t = Toast.makeText(getApplicationContext(), text, Toast.LENGTH_LONG);
+                        t.show();
+                    }
                 }
             };
             Intent i = new Intent(this, GCMRegistrationIntentService.class);
@@ -222,8 +222,7 @@ public class MainActivity extends AppCompatActivity
                 new DialogInterface.OnClickListener() {
 
                     public void onClick(DialogInterface dialog, int which) {
-                        Intent i = new Intent(getApplicationContext(), HelpRequest.class);
-                        startActivity(i);
+                        // nothing here
                     }
                 }
         );
@@ -244,10 +243,6 @@ public class MainActivity extends AppCompatActivity
     public void openMap(){
         Intent intent = new Intent(this, HelpRequest.class);
         startActivity(intent);
-    }
-
-    public void alarmClick(View v){
-        showSimplePopUp();
     }
 
     public void customMessageClick(View v){
