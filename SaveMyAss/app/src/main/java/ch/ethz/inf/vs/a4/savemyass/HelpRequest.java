@@ -7,15 +7,18 @@ import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.View;
-import android.widget.Button;
-import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -28,12 +31,11 @@ import ch.ethz.inf.vs.a4.savemyass.Structure.HelperMapUpdateReceiver;
 import ch.ethz.inf.vs.a4.savemyass.Structure.PINInfoBundle;
 import ch.ethz.inf.vs.a4.savemyass.Structure.SimpleAlarmDistributor;
 
-public class HelpRequest extends AppCompatActivity implements LocationListener, GoogleApiClient.ConnectionCallbacks,
-     GoogleApiClient.OnConnectionFailedListener, HelperMapUpdateReceiver{
+public class HelpRequest extends AppCompatActivity implements OnMapReadyCallback, LocationListener, GoogleApiClient.ConnectionCallbacks,
+     GoogleApiClient.OnConnectionFailedListener, HelperMapUpdateReceiver {
 
+    private GoogleMap mMap;
     private static final String TAG = "###HelpRequestActivity";
-
-    private TextView log;
     private HelperMapCombiner mapCombiner;
     private SimpleAlarmDistributor alarmSender;
 
@@ -41,13 +43,14 @@ public class HelpRequest extends AppCompatActivity implements LocationListener, 
     protected GoogleApiClient mGoogleApiClient;
     private List<AlarmCancelReceiver> alarmCancelReceivers;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.help_request);
-        log = (TextView) findViewById(R.id.help_request_log);
-        log.setText(log.getText() + "\n- alarm!");
+        setContentView(R.layout.activity_help_request_map);
+        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.map);
+        mapFragment.getMapAsync(this);
 
         // build Google API client to get the last known location
         buildGoogleApiClient();
@@ -63,13 +66,33 @@ public class HelpRequest extends AppCompatActivity implements LocationListener, 
         alarmSender = new SimpleAlarmDistributor();
         alarmSender.register(new AlarmRequestSender(getApplicationContext(), mapCombiner, this));
 
-        Button cancel = (Button) findViewById(R.id.cancel);
+/*        Button cancel = (Button) findViewById(R.id.cancel);
         cancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 cancelAlarm();
             }
-        });
+        });*/
+    }
+
+
+    /**
+     * Manipulates the map once available.
+     * This callback is triggered when the map is ready to be used.
+     * This is where we can add markers or lines, add listeners or move the camera. In this case,
+     * we just add a marker near Sydney, Australia.
+     * If Google Play services is not installed on the device, the user will be prompted to install
+     * it inside the SupportMapFragment. This method will only be triggered once the user has
+     * installed Google Play services and returned to the app.
+     */
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        mMap = googleMap;
+
+        // Add a marker in Sydney and move the camera
+        LatLng sydney = new LatLng(-34, 151);
+        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
     }
 
     @Override
@@ -163,9 +186,8 @@ public class HelpRequest extends AppCompatActivity implements LocationListener, 
         //todo update the UI
         // read the changes from this object here:
         HashMap<String, Location> newMap = mapCombiner.getMap();
-        log.setText("Log:\ngot an update of some helper locations:");
-        for(Location l : newMap.values())
-            log.setText(log.getText()+"\n  - "+l.toString());
+        //for(Location l : newMap.values())
+            //log.setText(log.getText()+"\n  - "+l.toString());
     }
 
     /**
