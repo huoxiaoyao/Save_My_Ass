@@ -13,11 +13,11 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.HashMap;
@@ -42,6 +42,8 @@ public class HelpRequest extends AppCompatActivity implements OnMapReadyCallback
     // entry point for Google Play services (used for getting the location)
     protected GoogleApiClient mGoogleApiClient;
     private List<AlarmCancelReceiver> alarmCancelReceivers;
+    // hash map of google map markers
+    private HashMap<String, Marker> markers;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,9 +92,9 @@ public class HelpRequest extends AppCompatActivity implements OnMapReadyCallback
         mMap = googleMap;
 
         // Add a marker in Sydney and move the camera
-        LatLng sydney = new LatLng(-34, 151);
-        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+       // LatLng sydney = new LatLng(-34, 151);
+        //mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
+        //mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
     }
 
     @Override
@@ -186,8 +188,19 @@ public class HelpRequest extends AppCompatActivity implements OnMapReadyCallback
         //todo update the UI
         // read the changes from this object here:
         HashMap<String, Location> newMap = mapCombiner.getMap();
-        //for(Location l : newMap.values())
-            //log.setText(log.getText()+"\n  - "+l.toString());
+        if(mMap != null){
+            for(String key : newMap.keySet()){
+                Location loc = newMap.get(key);
+                LatLng newPos = new LatLng(loc.getLatitude(), loc.getLongitude());
+                if(markers.get(key) == null)
+                    markers.put(key, mMap.addMarker(new MarkerOptions().position(newPos)));
+                else
+                    markers.get(key).setPosition(newPos);
+            }
+        }
+        else{
+            Log.d(TAG, "map isn't ready yet!");
+        }
     }
 
     /**

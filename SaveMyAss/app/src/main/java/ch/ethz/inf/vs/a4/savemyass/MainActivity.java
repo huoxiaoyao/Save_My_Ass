@@ -239,15 +239,13 @@ public class MainActivity extends AppCompatActivity
 
                 });
 
-
-
         // Remember, create doesn't show the dialog
         AlertDialog helpDialog = helpBuilder.create();
         helpDialog.show();
     }
 
     public void openMap(){
-        Intent intent = new Intent(this, HelpOthers.class);
+        Intent intent = new Intent(this, HelpRequest.class);
         startActivity(intent);
     }
 

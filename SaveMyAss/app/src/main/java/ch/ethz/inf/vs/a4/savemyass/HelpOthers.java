@@ -60,8 +60,6 @@ public class HelpOthers extends AppCompatActivity implements OnMapReadyCallback,
 
         infoBundle = getIntent().getParcelableExtra(Config.INTENT_INFO_BUNDLE);
 
-        //log = (TextView) findViewById(R.id.log);
-
         //accept = (Button) findViewById(R.id.accept);
         accept.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -69,8 +67,6 @@ public class HelpOthers extends AppCompatActivity implements OnMapReadyCallback,
                 HelpOthers.this.onAccept();
             }
         });
-
-        log.setText(log.getText()+"\n- User in need: "+ infoBundle.userID + "loc: "+ infoBundle.loc.toString());
 
         // the list of HelperLocationUpdate implementation that will get called if the location changes
         locationUpdates = new LinkedList<>();
@@ -101,9 +97,9 @@ public class HelpOthers extends AppCompatActivity implements OnMapReadyCallback,
         mMap = googleMap;
 
         // Add a marker in Sydney and move the camera
-        LatLng sydney = new LatLng(-34, 151);
-        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+        LatLng pin = new LatLng(infoBundle.loc.getLatitude(), infoBundle.loc.getLongitude());
+        mMap.addMarker(new MarkerOptions().position(pin).title("Person in need of help"));
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(pin));
     }
 
     public void onClick(View v){
