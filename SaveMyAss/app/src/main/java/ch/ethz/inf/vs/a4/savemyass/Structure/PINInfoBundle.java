@@ -38,7 +38,7 @@ public class PINInfoBundle implements Parcelable {
                     .put("location", new JSONObject()
                             .put("long", loc.getLongitude())
                             .put("lat", loc.getLatitude()))
-                    .put("message", message);
+                    .put("msg", message);
         } catch (JSONException e) {
             e.printStackTrace();
         }

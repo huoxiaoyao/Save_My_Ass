@@ -9,6 +9,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -58,6 +59,9 @@ public class HelpOthers extends AppCompatActivity implements OnMapReadyCallback,
         mapFragment.getMapAsync(this);
 
         infoBundle = getIntent().getParcelableExtra(Config.INTENT_INFO_BUNDLE);
+
+        TextView msg = (TextView) findViewById(R.id.msg);
+        msg.setText(infoBundle.message);
 
         accept = (Button) findViewById(R.id.accept);
         accept.setOnClickListener(new View.OnClickListener() {

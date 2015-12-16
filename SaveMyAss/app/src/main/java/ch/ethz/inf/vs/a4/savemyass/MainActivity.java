@@ -31,6 +31,7 @@ import android.widget.Toast;
 
 import ch.ethz.inf.vs.a4.savemyass.Centralized.Config;
 import ch.ethz.inf.vs.a4.savemyass.Centralized.GCMRegistrationIntentService;
+import ch.ethz.inf.vs.a4.savemyass.UI.Intro;
 
 public class MainActivity extends AppCompatActivity
     implements NavigationView.OnNavigationItemSelectedListener {
@@ -90,6 +91,15 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+        SharedPreferences sp =  PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        boolean info = sp.getBoolean(Config.SHARED_PREFS_FIRSTOPEN, true);
+        if(info){
+            sp.edit().putBoolean(Config.SHARED_PREFS_FIRSTOPEN, false).apply();
+            Intent i = new Intent(getApplicationContext(), Intro.class);
+            startActivity(i);
+        }
+
     }
 
     @Override
@@ -205,7 +215,8 @@ public class MainActivity extends AppCompatActivity
             startActivity(intent);
 
         } else if(id == R.id.info){
-            //nothing yet
+            Intent i = new Intent(getApplicationContext(), Intro.class);
+            startActivity(i);
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);

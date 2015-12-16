@@ -34,6 +34,7 @@ public class Intro extends AppIntro {
     @Override
     public void onSkipPressed() {
         // Do something when users tap on Skip button.
+        finish();
     }
 
     @Override
@@ -44,6 +45,7 @@ public class Intro extends AppIntro {
     @Override
     public void onDonePressed() {
         // Do something when users tap on Done button.
+        finish();
     }
 
     @Override
