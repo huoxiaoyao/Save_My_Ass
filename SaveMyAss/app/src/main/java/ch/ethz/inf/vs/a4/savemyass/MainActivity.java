@@ -202,11 +202,7 @@ public class MainActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.button_combo) {
-            Intent intent = new Intent(this, ButtonCombination.class);
-            startActivity(intent);
-
-        } else if (id == R.id.on_off_mode) {
+        if (id == R.id.on_off_mode) {
             Intent intent = new Intent(this, On_OffMode.class);
             startActivity(intent);
 
