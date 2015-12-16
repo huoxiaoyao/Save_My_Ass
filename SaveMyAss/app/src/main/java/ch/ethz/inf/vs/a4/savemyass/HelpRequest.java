@@ -15,6 +15,7 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -29,8 +30,8 @@ import java.util.List;
 import ch.ethz.inf.vs.a4.savemyass.Centralized.AlarmRequestSender;
 import ch.ethz.inf.vs.a4.savemyass.Centralized.Config;
 import ch.ethz.inf.vs.a4.savemyass.Structure.AlarmCancelReceiver;
-import ch.ethz.inf.vs.a4.savemyass.Structure.HelperOrPinLocationUpdate;
 import ch.ethz.inf.vs.a4.savemyass.Structure.HelperMapUpdateReceiver;
+import ch.ethz.inf.vs.a4.savemyass.Structure.HelperOrPinLocationUpdate;
 import ch.ethz.inf.vs.a4.savemyass.Structure.PINInfoBundle;
 import ch.ethz.inf.vs.a4.savemyass.Structure.SimpleAlarmDistributor;
 
@@ -126,6 +127,8 @@ public class HelpRequest extends AppCompatActivity implements OnMapReadyCallback
     private void onInfoBundleReady(PINInfoBundle infoBundle){
         // distribute the alarm to the registered senders
         alarmSender.distributeToSend(infoBundle);
+        LatLng loc = new LatLng(infoBundle.loc.getLatitude(), infoBundle.loc.getLongitude());
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(loc, (float) 14.5));
     }
 
     public void registerOnCancelReceiver(AlarmCancelReceiver receiver){

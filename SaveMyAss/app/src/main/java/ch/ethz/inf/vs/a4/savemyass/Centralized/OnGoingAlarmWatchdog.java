@@ -191,6 +191,11 @@ public class OnGoingAlarmWatchdog extends OnGoingAlarm implements LocationListen
                         if (timer != null)
                             timer.cancel();
                     }
+                    else{
+                        mGoogleApiClient.disconnect();
+                        if (timer != null)
+                            timer.cancel();
+                    }
                 }
 
                 @Override

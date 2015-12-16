@@ -57,6 +57,7 @@ public class HelpOthers extends AppCompatActivity implements OnMapReadyCallback,
     private Location lastLocation;
     private HelperMapCombiner mapCombiner;
     private Marker pinMarker;
+    private boolean declined;
 
     // entry point for Google Play services (used for getting the location)
     protected GoogleApiClient mGoogleApiClient;
@@ -93,6 +94,7 @@ public class HelpOthers extends AppCompatActivity implements OnMapReadyCallback,
         decline.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                declined = true;
                 finish();
             }
         });
@@ -131,9 +133,11 @@ public class HelpOthers extends AppCompatActivity implements OnMapReadyCallback,
 
         // Add a marker in Sydney and move the camera
         LatLng pin = new LatLng(infoBundle.loc.getLatitude(), infoBundle.loc.getLongitude());
-        pinMarker = mMap.addMarker(new MarkerOptions().position(pin).title("Person in need of help"));
+        pinMarker = mMap.addMarker(new MarkerOptions().position(pin).title(getString(R.string.person_in_need_of_help_map_info)));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(pin));
         mMap.setMyLocationEnabled(true);
+        LatLng loc = new LatLng(infoBundle.loc.getLatitude(), infoBundle.loc.getLongitude());
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(loc, (float) 14.5));
     }
 
     @Override
@@ -233,7 +237,8 @@ public class HelpOthers extends AppCompatActivity implements OnMapReadyCallback,
         NotificationManager mNotificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         //  allows you to update the notification later on.
-        mNotificationManager.notify(AlarmNotifier.notificationID, mBuilder.build());
+        if(!declined)
+            mNotificationManager.notify(AlarmNotifier.notificationID, mBuilder.build());
         finish();
     }
 
