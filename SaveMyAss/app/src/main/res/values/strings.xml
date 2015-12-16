@@ -17,4 +17,6 @@
     <string name="alarm_cancelled">The alarm has been cancelled</string>
     <string name="restart_with_internet">Please restart the app with internet available in order to register properly to the Service.</string>
     <string name="hint">Example: Allergic to peanuts</string>
+    <string name="no_personal_message">The user didn\'t specify a personal message</string>
+    <string name="message_prefix">Message: </string>
 </resources>

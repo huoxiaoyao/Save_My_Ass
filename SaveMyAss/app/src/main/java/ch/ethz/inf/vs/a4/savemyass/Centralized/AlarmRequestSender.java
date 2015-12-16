@@ -29,6 +29,8 @@ public class AlarmRequestSender extends AbstractAlarmRequestSender implements Re
 
     @Override
     public void onResponseReceive(JSONObject json) {
+        if(json == null)
+            return;
         if(json.has("error")) {
             Log.d(TAG, "couldn't trigger alarm");
         }

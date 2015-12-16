@@ -1,6 +1,5 @@
 package ch.ethz.inf.vs.a4.savemyass;
 
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.location.Location;
 import android.os.Bundle;
@@ -9,6 +8,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -60,8 +60,14 @@ public class HelpOthers extends AppCompatActivity implements OnMapReadyCallback,
 
         infoBundle = getIntent().getParcelableExtra(Config.INTENT_INFO_BUNDLE);
 
-        TextView msg = (TextView) findViewById(R.id.msg);
-        msg.setText(infoBundle.message);
+        TextView msgView = (TextView) findViewById(R.id.msg);
+        String msg = getString(R.string.message_prefix);
+        if(infoBundle.message.equals(""))
+            msg += getString(R.string.no_personal_message);
+        else
+            msg += infoBundle.message;
+
+        msgView.setText(msg);
 
         accept = (Button) findViewById(R.id.accept);
         accept.setOnClickListener(new View.OnClickListener() {
@@ -112,11 +118,6 @@ public class HelpOthers extends AppCompatActivity implements OnMapReadyCallback,
         mMap.addMarker(new MarkerOptions().position(pin).title("Person in need of help"));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(pin));
         mMap.setMyLocationEnabled(true);
-    }
-
-    public void onClick(View v){
-        Intent intent = new Intent(this, HelpRequest.class);
-        startActivity(intent);
     }
 
     @Override
@@ -181,9 +182,9 @@ public class HelpOthers extends AppCompatActivity implements OnMapReadyCallback,
         mGoogleApiClient.connect();
     }
 
-
     private void onAccept(){
-        accept.setClickable(false);
+        LinearLayout requestLayout = (LinearLayout) findViewById(R.id.requestLayout);
+        requestLayout.removeViewAt(requestLayout.getChildCount()-1);
         accepted = true;
         for (HelperLocationUpdate l : locationUpdates)
             l.onHelperLocationUpdate(lastLocation);
