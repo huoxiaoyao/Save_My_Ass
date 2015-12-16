@@ -21,7 +21,7 @@ import ch.ethz.inf.vs.a4.savemyass.Structure.PINInfoBundle;
 public class AlarmNotifier implements AlarmSender {
 
     protected static final String TAG = "###AlarmNotifier";
-    private static final int notificationID = 666;
+    public static final int notificationID = 666;
     private final Context ctx;
 
     public AlarmNotifier(Context ctx){
@@ -38,13 +38,13 @@ public class AlarmNotifier implements AlarmSender {
      * note: if ID stays unchanged it just updates the notification...
      */
     private void showNotification(PINInfoBundle bundle) {
-        String title = "Save My Ass - Alarm!";
+        String title = ctx.getString(R.string.app_name);
         // initialize the notification
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(ctx)
                         .setSmallIcon(R.mipmap.ic_launcher)
                         .setContentTitle(title)
-                        .setContentText(bundle.toString())
+                        .setContentText(ctx.getString(R.string.alarm_triggered_notification))
                         .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
                         .setAutoCancel(true);
         Intent resultIntent = new Intent(ctx, HelpOthers.class);

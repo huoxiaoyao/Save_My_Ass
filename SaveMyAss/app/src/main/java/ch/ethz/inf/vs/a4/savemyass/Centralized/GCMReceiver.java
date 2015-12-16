@@ -4,6 +4,7 @@ import android.content.SharedPreferences;
 import android.location.Location;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.provider.Settings;
 import android.util.Log;
 
 import com.google.android.gms.gcm.GcmListenerService;
@@ -17,7 +18,6 @@ import ch.ethz.inf.vs.a4.savemyass.Structure.PINInfoBundle;
  * current alarm.
  * Note that all the people that are somewhat near the person in need of help get the GCM message.
  */
-//todo: implement logic
 public class GCMReceiver extends GcmListenerService {
 
     protected static String TAG = "###GCMReceiver";
@@ -36,7 +36,6 @@ public class GCMReceiver extends GcmListenerService {
     public void onMessageReceived(String from, Bundle data) {
         super.onMessageReceived(from, data);
         String firebaseUrl = data.getString("node");
-        // todo: only until simon implemented this
         firebaseUrl = Config.FIREBASE_BASE_ADDRESS+"alarms/"+firebaseUrl+"/helpers/";
         Log.d(TAG, "From: " + from);
         Log.d(TAG, "Bundle: " + data);
@@ -46,12 +45,15 @@ public class GCMReceiver extends GcmListenerService {
         Location pinLocation = new Location("");
         pinLocation.setLatitude(Double.parseDouble(data.getString("latitude")));
         pinLocation.setLongitude(Double.parseDouble(data.getString("longitude")));
-        PINInfoBundle infoBundle = new PINInfoBundle(data.getString("user_id"), pinLocation, data.getString("msg"));
+        PINInfoBundle infoBundle = new PINInfoBundle(data.getString("user"), pinLocation, data.getString("msg"));
 
 
         // start the watchdog
+        String myUserID = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
-        if(sp.getBoolean(Config.SHARED_PREFS_CENTRALIZED_ACTIVE, true))
-            new OnGoingAlarmWatchdog(getApplicationContext(), firebaseUrl, infoBundle);
+        if(myUserID != null) {
+            if (sp.getBoolean(Config.SHARED_PREFS_CENTRALIZED_ACTIVE, true) && !infoBundle.userID.equals(myUserID))
+                new OnGoingAlarmWatchdog(getApplicationContext(), firebaseUrl, infoBundle);
+        }
     }
 }

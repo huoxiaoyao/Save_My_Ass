@@ -6,6 +6,7 @@ import android.util.Log;
 
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
+import com.firebase.geofire.GeoFire;
 import com.firebase.geofire.GeoLocation;
 import com.firebase.geofire.GeoQuery;
 import com.firebase.geofire.GeoQueryEventListener;
@@ -16,6 +17,7 @@ import ch.ethz.inf.vs.a4.savemyass.HelpRequest;
 import ch.ethz.inf.vs.a4.savemyass.HelperMapCombiner;
 import ch.ethz.inf.vs.a4.savemyass.Structure.AlarmCancelReceiver;
 import ch.ethz.inf.vs.a4.savemyass.Structure.HelperInfoBundle;
+import ch.ethz.inf.vs.a4.savemyass.Structure.HelperOrPinLocationUpdate;
 import ch.ethz.inf.vs.a4.savemyass.Structure.PINInfoBundle;
 
 /**
@@ -25,7 +27,7 @@ import ch.ethz.inf.vs.a4.savemyass.Structure.PINInfoBundle;
  *
  * - Gets updates from firebase and displays them.
  */
-public class OnGoingAlarmPIN extends OnGoingAlarm implements AlarmCancelReceiver {
+public class OnGoingAlarmPIN extends OnGoingAlarm implements AlarmCancelReceiver, HelperOrPinLocationUpdate {
 
     protected static final String TAG = "###OnGoingASPIN";
 
@@ -35,6 +37,7 @@ public class OnGoingAlarmPIN extends OnGoingAlarm implements AlarmCancelReceiver
         super(ctx, firebaseURL, pinInfoBundle);
         this.mapCombiner = mapCombiner;
         requestActivity.registerOnCancelReceiver(this);
+        requestActivity.regsiterOnPINLocationChangeReceiver(this);
     }
 
     @Override
@@ -85,5 +88,15 @@ public class OnGoingAlarmPIN extends OnGoingAlarm implements AlarmCancelReceiver
         HashMap<String, Object> map = new HashMap<>();
         map.put("active", false);
         firebaseRef.getParent().updateChildren(map);
+    }
+
+    @Override
+    public void onLocationUpdate(Location loc) {
+        Firebase firebaseRef = new Firebase(firebaseURL);
+        HashMap<String, Object> map = new HashMap<>();
+        map.put("active", false);
+        GeoFire geoFire = new GeoFire(firebaseRef.getParent().child("pin/location"));
+        GeoLocation geoLoc = new GeoLocation(loc.getLatitude(), loc.getLongitude());
+        geoFire.setLocation("location", geoLoc);
     }
 }

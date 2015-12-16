@@ -19,4 +19,5 @@
     <string name="hint">Example: Allergic to peanuts</string>
     <string name="no_personal_message">The user didn\'t specify a personal message</string>
     <string name="message_prefix">Message: </string>
+    <string name="alarm_triggered_notification">Somebody near to you needs help!</string>
 </resources>

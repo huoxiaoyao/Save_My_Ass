@@ -29,6 +29,7 @@ import java.util.List;
 import ch.ethz.inf.vs.a4.savemyass.Centralized.AlarmRequestSender;
 import ch.ethz.inf.vs.a4.savemyass.Centralized.Config;
 import ch.ethz.inf.vs.a4.savemyass.Structure.AlarmCancelReceiver;
+import ch.ethz.inf.vs.a4.savemyass.Structure.HelperOrPinLocationUpdate;
 import ch.ethz.inf.vs.a4.savemyass.Structure.HelperMapUpdateReceiver;
 import ch.ethz.inf.vs.a4.savemyass.Structure.PINInfoBundle;
 import ch.ethz.inf.vs.a4.savemyass.Structure.SimpleAlarmDistributor;
@@ -46,6 +47,7 @@ public class HelpRequest extends AppCompatActivity implements OnMapReadyCallback
     private List<AlarmCancelReceiver> alarmCancelReceivers;
     // hash map of google map markers
     private HashMap<String, Marker> markers;
+    private List<HelperOrPinLocationUpdate> locationUpdates;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,9 +68,13 @@ public class HelpRequest extends AppCompatActivity implements OnMapReadyCallback
         // list of cancel receivers
         alarmCancelReceivers = new LinkedList<>();
 
+        // the list of HelperLocationUpdate implementation that will get called if the location changes
+        locationUpdates = new LinkedList<>();
+
         // set up the alarm senders
         alarmSender = new SimpleAlarmDistributor();
         alarmSender.register(new AlarmRequestSender(getApplicationContext(), mapCombiner, this));
+
 
         markers = new HashMap<>();
         Button cancel = (Button) findViewById(R.id.cancel);
@@ -124,7 +130,10 @@ public class HelpRequest extends AppCompatActivity implements OnMapReadyCallback
 
     public void registerOnCancelReceiver(AlarmCancelReceiver receiver){
         alarmCancelReceivers.add(receiver);
+    }
 
+    public void regsiterOnPINLocationChangeReceiver(HelperOrPinLocationUpdate updateReceiver){
+        locationUpdates.add(updateReceiver);
     }
 
     // creates location request
@@ -150,7 +159,8 @@ public class HelpRequest extends AppCompatActivity implements OnMapReadyCallback
      */
     @Override
     public void onLocationChanged(Location location) {
-        // todo: change the users location on the map
+        for (HelperOrPinLocationUpdate l : locationUpdates)
+            l.onLocationUpdate(location);
     }
 
     @Override
@@ -184,13 +194,13 @@ public class HelpRequest extends AppCompatActivity implements OnMapReadyCallback
      */
     @Override
     public void onUpdate() {
-        //todo update the UI
-        // read the changes from this object here:
+        // get the new hash-map
         HashMap<String, Location> newMap = mapCombiner.getMap();
         if(mMap != null){
             for(String key : newMap.keySet()){
                 Location loc = newMap.get(key);
                 LatLng newPos = new LatLng(loc.getLatitude(), loc.getLongitude());
+                // change the position of the markers if necessary or add them
                 if(markers.get(key) == null)
                     markers.put(key, mMap.addMarker(new MarkerOptions().position(newPos)));
                 else
