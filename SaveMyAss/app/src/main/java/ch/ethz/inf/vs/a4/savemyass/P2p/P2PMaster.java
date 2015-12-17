@@ -9,6 +9,7 @@ import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceInfo;
+import android.provider.Settings;
 import android.util.Log;
 
 import java.net.Socket;
@@ -16,11 +17,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import ch.ethz.inf.vs.a4.savemyass.Structure.ServiceDestroyReceiver;
+
 /**
  * Created by Fabian_admin on 16.12.2015.
  */
-public class P2PMaster implements WifiP2pManager.ConnectionInfoListener, PeerDiscoverListener {
+public class P2PMaster implements WifiP2pManager.ConnectionInfoListener, PeerDiscoverListener, ServiceDestroyReceiver {
     public static final String TAG = "## P2PMaster ##";
+
+    public static String userID;
+    private String userMessage;
 
     protected final WifiP2pManager manager;
     protected final WifiP2pManager.Channel channel;
@@ -61,6 +67,8 @@ public class P2PMaster implements WifiP2pManager.ConnectionInfoListener, PeerDis
     }
 
     private P2PMaster( final Context context ){
+
+        userID = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
 
         manager = (WifiP2pManager) context.getSystemService( context.WIFI_P2P_SERVICE );
         channel = manager.initialize( context, context.getMainLooper(), null );
@@ -116,6 +124,38 @@ public class P2PMaster implements WifiP2pManager.ConnectionInfoListener, PeerDis
                 Log.d( TAG, "add service failure");
             }
         });
+    }
+
+    public void setUserMessage(String message) {
+        userMessage = message;
+    }
+
+    public void cleanup() {
+        if(manager != null) {
+            manager.clearLocalServices(channel, new WifiP2pManager.ActionListener() {
+                @Override
+                public void onSuccess() {
+                    Log.d(TAG, "remove service success");
+                }
+
+                @Override
+                public void onFailure(int reason) {
+                    Log.d(TAG, "remove service failure");
+                }
+            });
+
+            manager.clearServiceRequests(channel, new WifiP2pManager.ActionListener() {
+                @Override
+                public void onSuccess() {
+                    Log.d(TAG, "remove service request success");
+                }
+
+                @Override
+                public void onFailure(int reason) {
+                    Log.d(TAG, "remove service request failure");
+                }
+            });
+        }
     }
 
     public void rejectAlarms(){
@@ -201,5 +241,10 @@ public class P2PMaster implements WifiP2pManager.ConnectionInfoListener, PeerDis
             }
         });
         */
+    }
+
+    @Override
+    public void onServiceDestroy() {
+        cleanup();
     }
 }

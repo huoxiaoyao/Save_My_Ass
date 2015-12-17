@@ -145,13 +145,23 @@ public class BackgroundService extends Service implements SharedPreferences.OnSh
                 removeP2p();
             }
         }
+
+        if(key.equals(Config.SHARED_PREFS_USER_MESSAGE)) {
+            String m = sharedPreferences.getString(key, "");
+            p2pMaster.setUserMessage(m);
+        }
     }
 
     public void setupP2p() {
         ownLocDistr = new OwnLocationDistributor(getApplicationContext());
-        serviceDestroyReceivers.add(ownLocDistr);
-
-        p2pMaster = P2PMaster.createP2PMaster()
+        p2pMaster = P2PMaster.createP2PMaster(getApplicationContext());
+        String message = PreferenceManager.getDefaultSharedPreferences(this)
+                .getString(Config.SHARED_PREFS_USER_MESSAGE, "");
+        p2pMaster.setUserMessage(message);
+        if(serviceDestroyReceivers != null) {
+            serviceDestroyReceivers.add(ownLocDistr);
+            serviceDestroyReceivers.add(p2pMaster);
+        }
     }
 
     public void removeP2p() {
@@ -159,7 +169,13 @@ public class BackgroundService extends Service implements SharedPreferences.OnSh
         if(ownLocDistr != null) {
             ownLocDistr.onServiceDestroy();
             serviceDestroyReceivers.remove(ownLocDistr);
+            serviceDestroyReceivers.remove(p2pMaster);
             ownLocDistr = null;
+        }
+        if(p2pMaster != null) {
+            p2pMaster.onServiceDestroy();
+            serviceDestroyReceivers.remove(p2pMaster);
+            p2pMaster = null;
         }
     }
 }

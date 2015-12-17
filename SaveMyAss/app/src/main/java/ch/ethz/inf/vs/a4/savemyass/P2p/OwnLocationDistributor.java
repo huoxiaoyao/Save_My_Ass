@@ -24,14 +24,12 @@ public class OwnLocationDistributor implements LocationListener, GoogleApiClient
 
     private static final String TAG = "##LocationDistributor##";
 
-    private String userID;
     private Context context;
     private List<OwnLocationUpdateListener> observers;
     private GoogleApiClient mGoogleApiClient;
 
     public OwnLocationDistributor(Context context) {
         this.context = context;
-        Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
 
         buildGoogleApiClient();
         mGoogleApiClient.connect();
