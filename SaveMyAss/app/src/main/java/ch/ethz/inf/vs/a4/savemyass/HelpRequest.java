@@ -29,6 +29,7 @@ import java.util.List;
 
 import ch.ethz.inf.vs.a4.savemyass.Centralized.AlarmRequestSender;
 import ch.ethz.inf.vs.a4.savemyass.Centralized.Config;
+import ch.ethz.inf.vs.a4.savemyass.P2p.P2PMaster;
 import ch.ethz.inf.vs.a4.savemyass.Structure.AlarmCancelReceiver;
 import ch.ethz.inf.vs.a4.savemyass.Structure.HelperMapUpdateReceiver;
 import ch.ethz.inf.vs.a4.savemyass.Structure.HelperOrPinLocationUpdate;
@@ -75,6 +76,11 @@ public class HelpRequest extends AppCompatActivity implements OnMapReadyCallback
         // set up the alarm senders
         alarmSender = new SimpleAlarmDistributor();
         alarmSender.register(new AlarmRequestSender(getApplicationContext(), mapCombiner, this));
+
+        //if we use p2p, also register p2p alarmsender
+        if(P2PMaster.lastInstance != null) {
+            alarmSender.register(P2PMaster.lastInstance);
+        }
 
 
         markers = new HashMap<>();

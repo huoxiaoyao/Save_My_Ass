@@ -162,6 +162,8 @@ public class BackgroundService extends Service implements SharedPreferences.OnSh
             serviceDestroyReceivers.add(ownLocDistr);
             serviceDestroyReceivers.add(p2pMaster);
         }
+        //connect the p2p framework to the ui
+        p2pMaster.register(new AlarmNotifier(getApplicationContext()));
     }
 
     public void removeP2p() {

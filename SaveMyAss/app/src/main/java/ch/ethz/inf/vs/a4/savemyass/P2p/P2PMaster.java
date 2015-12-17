@@ -27,7 +27,7 @@ import ch.ethz.inf.vs.a4.savemyass.Structure.SimpleAlarmDistributor;
  * Created by Fabian_admin on 16.12.2015.
  */
 public class P2PMaster implements WifiP2pManager.ConnectionInfoListener, PeerDiscoverListener,
-        ServiceDestroyReceiver, AlarmDistributor {
+        ServiceDestroyReceiver, AlarmDistributor, AlarmSender {
     public static final String TAG = "## P2PMaster ##";
 
     public static String userID;
@@ -56,7 +56,9 @@ public class P2PMaster implements WifiP2pManager.ConnectionInfoListener, PeerDis
 
     private boolean alarmActive = false;
 
-    public static  P2PMaster createP2PMaster( final Context context ){
+    public static P2PMaster lastInstance = null;
+
+    public static P2PMaster createP2PMaster( final Context context ){
 
         P2PMaster master = new P2PMaster( context );
 
@@ -71,6 +73,7 @@ public class P2PMaster implements WifiP2pManager.ConnectionInfoListener, PeerDis
         master.setBroadcastReceiver(broadcastReceiver);
         context.registerReceiver(broadcastReceiver, intentFilter);
 
+        lastInstance = master;
         return master;
     }
 
@@ -166,6 +169,7 @@ public class P2PMaster implements WifiP2pManager.ConnectionInfoListener, PeerDis
                     Log.d(TAG, "remove service request failure");
                 }
             });
+
         }
     }
 
@@ -184,12 +188,12 @@ public class P2PMaster implements WifiP2pManager.ConnectionInfoListener, PeerDis
     }
 
     public void addSocket( Socket socket ){
-        socketList.add( socket );
+        socketList.add(socket);
     }
 
     @Override
     public void onConnectionInfoAvailable(WifiP2pInfo info) {
-        Log.d( TAG, "onConnectionInfoAvailable" );
+        Log.d(TAG, "onConnectionInfoAvailable");
 
         // TODO: sometimes this method is called even though no connection exists, which leads to errors in the current version
 
@@ -256,6 +260,7 @@ public class P2PMaster implements WifiP2pManager.ConnectionInfoListener, PeerDis
 
     @Override
     public void onServiceDestroy() {
+        lastInstance = null;
         cleanup();
     }
 
@@ -272,5 +277,10 @@ public class P2PMaster implements WifiP2pManager.ConnectionInfoListener, PeerDis
     @Override
     public void deregister(AlarmSender client) {
         myAlarmDistributor.deregister(client);
+    }
+
+    @Override
+    public void callForHelp(PINInfoBundle bundle) {
+        
     }
 }
