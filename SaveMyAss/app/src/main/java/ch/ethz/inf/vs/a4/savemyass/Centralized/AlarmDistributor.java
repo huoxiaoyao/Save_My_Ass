@@ -3,6 +3,7 @@ package ch.ethz.inf.vs.a4.savemyass.Centralized;
 import android.content.Context;
 import android.util.Log;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
@@ -20,15 +21,23 @@ public class AlarmDistributor extends AbstractAlarmRequestSender implements Resp
     }
 
     @Override
-    public void onResponseReceive(JSONObject response) {
-        if(response == null){
-            Log.d(TAG, "server responded with null");
+    public void onResponseReceive(JSONObject json) {
+        if(json == null)
             return;
+        if(json.has("error")) {
+            Log.d(TAG, "couldn't trigger alarm");
         }
-
-        //todo: do appropriate error handling here!
-
-        //todo: implement the case where we want to send someone else's alarm further on (got to us by p2p)
+        if(json.has("code")){
+            try {
+                if(!json.get("code").equals("200"))
+                    Log.d(TAG, "couldn't trigger alarm");
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        else {
+            Log.d(TAG, "couldn't trigger alarm");
+        }
     }
 
 }

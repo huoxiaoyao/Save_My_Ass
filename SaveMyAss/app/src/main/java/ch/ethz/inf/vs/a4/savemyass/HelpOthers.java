@@ -146,9 +146,10 @@ public class HelpOthers extends AppCompatActivity implements OnMapReadyCallback,
 
     @Override
     protected void onDestroy() {
-        // todo: reset active alarm flag in shared prefs
+        // reset active alarm flag in shared prefs
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
         sp.edit().putBoolean(Config.SHARED_PREFS_ALARM_ACTIVE, false).apply();
+        // destroy google api client
         mGoogleApiClient.disconnect();
         super.onDestroy();
     }
@@ -224,7 +225,7 @@ public class HelpOthers extends AppCompatActivity implements OnMapReadyCallback,
         // initialize the notification
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(getApplicationContext())
-                        .setSmallIcon(R.mipmap.ic_launcher)
+                        .setSmallIcon(R.mipmap.ic_launcher_logo)
                         .setContentTitle(title)
                         .setContentText(getString(R.string.alarm_cancelled))
                         .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))

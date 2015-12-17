@@ -34,15 +34,22 @@ public class AlarmRequestSender extends AbstractAlarmRequestSender implements Re
         if(json.has("error")) {
             Log.d(TAG, "couldn't trigger alarm");
         }
-        else {
+        if(json.has("code")){
             try {
-                String firebaseUrl = json.getString("node");
-                firebaseUrl = Config.FIREBASE_BASE_ADDRESS+"alarms/"+firebaseUrl+"/";
-                firebaseUrl = firebaseUrl+"helpers/";
-                new OnGoingAlarmPIN(ctx, firebaseUrl, infoBundle, mapCombiner, requestActivity);
+                if(!json.get("code").equals("200"))
+                    Log.d(TAG, "couldn't trigger alarm");
+                else {
+                    String firebaseUrl = json.getString("node");
+                    firebaseUrl = Config.FIREBASE_BASE_ADDRESS + "alarms/" + firebaseUrl + "/";
+                    firebaseUrl = firebaseUrl + "helpers/";
+                    new OnGoingAlarmPIN(ctx, firebaseUrl, infoBundle, mapCombiner, requestActivity);
+                }
             } catch (JSONException e) {
                 e.printStackTrace();
             }
+        }
+        else {
+            Log.d(TAG, "couldn't trigger alarm");
         }
     }
 }

@@ -114,8 +114,6 @@ public class GCMRegistrationIntentService extends IntentService {
             SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
             sp.edit().putString(Config.SHARED_PREFS_FIREBASE_AUTH, res.getString("token")).apply();
 
-            // todo: handle error codes from server side here!
-
             if(res.has("error")) {
                 Log.d(TAG, "an error occurred when trying to send token to the server");
                 return false;

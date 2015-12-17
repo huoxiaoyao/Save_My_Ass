@@ -205,7 +205,7 @@ public class HelpRequest extends AppCompatActivity implements OnMapReadyCallback
                 LatLng newPos = new LatLng(loc.getLatitude(), loc.getLongitude());
                 // change the position of the markers if necessary or add them
                 if(markers.get(key) == null)
-                    markers.put(key, mMap.addMarker(new MarkerOptions().position(newPos)));
+                    markers.put(key, mMap.addMarker(new MarkerOptions().position(newPos).title(getString(R.string.helper_map_info))));
                 else
                     markers.get(key).setPosition(newPos);
             }

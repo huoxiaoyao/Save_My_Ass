@@ -44,7 +44,7 @@ public class AlarmNotifier implements AlarmSender {
         // initialize the notification
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(ctx)
-                        .setSmallIcon(R.mipmap.ic_launcher)
+                        .setSmallIcon(R.mipmap.ic_launcher_logo)
                         .setContentTitle(title)
                         .setContentText(ctx.getString(R.string.alarm_triggered_notification))
                         .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))

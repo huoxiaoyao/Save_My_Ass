@@ -40,20 +40,27 @@ public class GCMReceiver extends GcmListenerService {
         Log.d(TAG, "From: " + from);
         Log.d(TAG, "Bundle: " + data);
 
-        // todo: do error handling here!
+        String locLat, locLong, user, msg;
+        locLat = data.getString("latitude");
+        locLong = data.getString("longitude");
+        user = data.getString("user");
+        msg = data.getString("msg");
 
-        Location pinLocation = new Location("");
-        pinLocation.setLatitude(Double.parseDouble(data.getString("latitude")));
-        pinLocation.setLongitude(Double.parseDouble(data.getString("longitude")));
-        PINInfoBundle infoBundle = new PINInfoBundle(data.getString("user"), pinLocation, data.getString("msg"));
+        if(locLat == null || locLong == null || user == null || msg == null)
+            Log.d(TAG, "received an invalid message!");
+        else {
+            Location pinLocation = new Location("");
+            pinLocation.setLatitude(Double.parseDouble(locLat));
+            pinLocation.setLongitude(Double.parseDouble(locLong));
+            PINInfoBundle infoBundle = new PINInfoBundle(user, pinLocation, msg);
 
-
-        // start the watchdog
-        String myUserID = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
-        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
-        if(myUserID != null) {
-            if (sp.getBoolean(Config.SHARED_PREFS_CENTRALIZED_ACTIVE, true) && !infoBundle.userID.equals(myUserID))
-                new OnGoingAlarmWatchdog(getApplicationContext(), firebaseUrl, infoBundle);
+            // start the watchdog
+            String myUserID = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+            SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
+            if (myUserID != null) {
+                if (sp.getBoolean(Config.SHARED_PREFS_CENTRALIZED_ACTIVE, true) && !infoBundle.userID.equals(myUserID))
+                    new OnGoingAlarmWatchdog(getApplicationContext(), firebaseUrl, infoBundle);
+            }
         }
     }
 }

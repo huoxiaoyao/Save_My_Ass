@@ -162,15 +162,12 @@ public class MainActivity extends AppCompatActivity
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         //sharedPreferences.edit().putBoolean(Config.SENT_TOKEN_TO_SERVER, false).apply();
 
-        // progress bar that is used for the registration for the centralized approach
-        // todo add the progress bar to the layout
         //RegistrationProgressBar = (ProgressBar) findViewById(R.id.registrationProgressBar);
         if(!sharedPreferences.getBoolean(Config.SENT_TOKEN_TO_SERVER, false)){
             // broadcast receiver that gets event as soon as server responded...
             RegistrationBroadcastReceiver = new BroadcastReceiver() {
                 @Override
                 public void onReceive(Context context, Intent intent) {
-                    //RegistrationProgressBar.setVisibility(ProgressBar.GONE);
                     SharedPreferences sp =  PreferenceManager.getDefaultSharedPreferences(context);
                     boolean sentToken = sp.getBoolean(Config.SENT_TOKEN_TO_SERVER, false);
                     boolean centralized = sp.getBoolean(Config.SHARED_PREFS_CENTRALIZED_ACTIVE, false);
@@ -184,9 +181,6 @@ public class MainActivity extends AppCompatActivity
             Intent i = new Intent(this, GCMRegistrationIntentService.class);
             startService(i);
             Log.d(TAG, "GCMRegistrationIntentService has been started");
-        }
-        else{
-            //RegistrationProgressBar.setVisibility(ProgressBar.GONE);
         }
     }
 

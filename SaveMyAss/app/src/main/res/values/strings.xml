@@ -21,6 +21,7 @@
     <string name="message_prefix">Message:&#160;</string>
     <string name="alarm_triggered_notification">Somebody near to you needs help!</string>
     <string name="person_in_need_of_help_map_info">person in need of help</string>
+    <string name="helper_map_info">this person accepted your alarm</string>
     <string name="gps_network_not_enabled">In order for our app to work, you need to enable location services in the settings</string>
     <string name="open_location_settings">go to location settings</string>
     <string name="dont_open_location_settings">close app</string>
