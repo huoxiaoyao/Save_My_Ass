@@ -49,6 +49,10 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        //disable p2p first
+        PreferenceManager.getDefaultSharedPreferences(this).edit()
+                .putBoolean(Config.SHARED_PREFS_P2P_ACTIVE, false).apply();
+
         // Android 6+ permission checks...
         boolean location, contacts;
         location = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)

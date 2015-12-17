@@ -16,6 +16,8 @@ import java.util.List;
 import ch.ethz.inf.vs.a4.savemyass.Centralized.AlarmDistributor;
 import ch.ethz.inf.vs.a4.savemyass.Centralized.Config;
 import ch.ethz.inf.vs.a4.savemyass.Centralized.LocationTracker;
+import ch.ethz.inf.vs.a4.savemyass.P2p.OwnLocationDistributor;
+import ch.ethz.inf.vs.a4.savemyass.P2p.P2PMaster;
 import ch.ethz.inf.vs.a4.savemyass.Structure.ServiceDestroyReceiver;
 import ch.ethz.inf.vs.a4.savemyass.Structure.SimpleAlarmDistributor;
 import ch.ethz.inf.vs.a4.savemyass.UI.AlarmNotifier;
@@ -37,6 +39,10 @@ public class BackgroundService extends Service implements SharedPreferences.OnSh
     private LocationTracker locationTracker;
 
     private List<ServiceDestroyReceiver> serviceDestroyReceivers;
+
+    //p2p
+    private OwnLocationDistributor ownLocDistr = null;
+    public P2PMaster p2pMaster;
 
     @Override
     public void onCreate() {
@@ -69,6 +75,12 @@ public class BackgroundService extends Service implements SharedPreferences.OnSh
         serviceDestroyReceivers = new LinkedList<>();
         serviceDestroyReceivers.add(locationTracker);
 
+        //set up p2p only if it is wanted
+        if(sp.getBoolean(Config.SHARED_PREFS_P2P_ACTIVE, false)){
+            setupP2p();
+        }
+
+
         // register alarm manager to check if service is running and start it in cases it's no yet
         // running (done in WakefulServiceStarter)
         AlarmManager alarmMgr = (AlarmManager) getApplicationContext().getSystemService(Context.ALARM_SERVICE);
@@ -81,6 +93,10 @@ public class BackgroundService extends Service implements SharedPreferences.OnSh
         if(!sp.getBoolean(Config.SHARED_PREFS_CENTRALIZED_ACTIVE, true)){
             locationTracker.onServiceDestroy();
             serviceDestroyReceivers.remove(locationTracker);
+        }
+        //destroy p2p if not wanted
+        if(!sp.getBoolean(Config.SHARED_PREFS_P2P_ACTIVE, false)){
+            removeP2p();
         }
 
         sp.registerOnSharedPreferenceChangeListener(this);
@@ -117,6 +133,50 @@ public class BackgroundService extends Service implements SharedPreferences.OnSh
                 locationTracker = new LocationTracker(getApplicationContext());
                 serviceDestroyReceivers.add(locationTracker);
             }
+        }
+
+        if(key.equals(Config.SHARED_PREFS_P2P_ACTIVE)) {
+            boolean b = sharedPreferences.getBoolean(key, true);
+            if(b){
+                setupP2p();
+            }
+            else{
+                removeP2p();
+            }
+        }
+
+        if(key.equals(Config.SHARED_PREFS_USER_MESSAGE)) {
+            String m = sharedPreferences.getString(key, "");
+            p2pMaster.setUserMessage(m);
+        }
+    }
+
+    public void setupP2p() {
+        ownLocDistr = new OwnLocationDistributor(getApplicationContext());
+        p2pMaster = P2PMaster.createP2PMaster(getApplicationContext());
+        String message = PreferenceManager.getDefaultSharedPreferences(this)
+                .getString(Config.SHARED_PREFS_USER_MESSAGE, "");
+        p2pMaster.setUserMessage(message);
+        if(serviceDestroyReceivers != null) {
+            serviceDestroyReceivers.add(ownLocDistr);
+            serviceDestroyReceivers.add(p2pMaster);
+        }
+        //connect the p2p framework to the ui
+        p2pMaster.register(new AlarmNotifier(getApplicationContext()));
+    }
+
+    public void removeP2p() {
+        //location distribution
+        if(ownLocDistr != null) {
+            ownLocDistr.onServiceDestroy();
+            serviceDestroyReceivers.remove(ownLocDistr);
+            serviceDestroyReceivers.remove(p2pMaster);
+            ownLocDistr = null;
+        }
+        if(p2pMaster != null) {
+            p2pMaster.onServiceDestroy();
+            serviceDestroyReceivers.remove(p2pMaster);
+            p2pMaster = null;
         }
     }
 }

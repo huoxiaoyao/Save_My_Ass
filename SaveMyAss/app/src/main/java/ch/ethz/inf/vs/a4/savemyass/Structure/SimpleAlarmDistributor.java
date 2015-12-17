@@ -18,7 +18,10 @@ public class SimpleAlarmDistributor implements AlarmDistributor{
     @Override
     public void distributeToSend(PINInfoBundle info) {
         for(AlarmSender s : senders) {
-            s.callForHelp(info);
+            if(s != null)
+                s.callForHelp(info);
+            else
+                senders.remove(s);
         }
     }
 

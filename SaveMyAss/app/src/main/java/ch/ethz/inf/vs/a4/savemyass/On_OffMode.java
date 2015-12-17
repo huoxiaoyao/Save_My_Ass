@@ -24,7 +24,10 @@ public class On_OffMode extends AppCompatActivity {
 
         Switch p2pConnection = (Switch) findViewById(R.id.p2pConnection);
         sp = PreferenceManager.getDefaultSharedPreferences(this);
-        p2pConnection.setChecked(sp.getBoolean(Config.SHARED_PREFS_P2P_ACTIVE, true));
+        //just until it works
+        sp.edit().putBoolean(Config.SHARED_PREFS_P2P_ACTIVE, false).apply();
+        p2pConnection.setChecked(sp.getBoolean(Config.SHARED_PREFS_P2P_ACTIVE, false));
+        p2pConnection.setEnabled(false);
         p2pConnection.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
