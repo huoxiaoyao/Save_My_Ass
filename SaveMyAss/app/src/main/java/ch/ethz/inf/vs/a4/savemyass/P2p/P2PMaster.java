@@ -17,16 +17,24 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import ch.ethz.inf.vs.a4.savemyass.Structure.AlarmDistributor;
+import ch.ethz.inf.vs.a4.savemyass.Structure.AlarmSender;
+import ch.ethz.inf.vs.a4.savemyass.Structure.PINInfoBundle;
 import ch.ethz.inf.vs.a4.savemyass.Structure.ServiceDestroyReceiver;
+import ch.ethz.inf.vs.a4.savemyass.Structure.SimpleAlarmDistributor;
 
 /**
  * Created by Fabian_admin on 16.12.2015.
  */
-public class P2PMaster implements WifiP2pManager.ConnectionInfoListener, PeerDiscoverListener, ServiceDestroyReceiver {
+public class P2PMaster implements WifiP2pManager.ConnectionInfoListener, PeerDiscoverListener,
+        ServiceDestroyReceiver, AlarmDistributor {
     public static final String TAG = "## P2PMaster ##";
 
     public static String userID;
     private String userMessage;
+
+    //delegate
+    private AlarmDistributor myAlarmDistributor;
 
     protected final WifiP2pManager manager;
     protected final WifiP2pManager.Channel channel;
@@ -69,6 +77,9 @@ public class P2PMaster implements WifiP2pManager.ConnectionInfoListener, PeerDis
     private P2PMaster( final Context context ){
 
         userID = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
+
+        //as a delegate
+        myAlarmDistributor = new SimpleAlarmDistributor();
 
         manager = (WifiP2pManager) context.getSystemService( context.WIFI_P2P_SERVICE );
         channel = manager.initialize( context, context.getMainLooper(), null );
@@ -246,5 +257,20 @@ public class P2PMaster implements WifiP2pManager.ConnectionInfoListener, PeerDis
     @Override
     public void onServiceDestroy() {
         cleanup();
+    }
+
+    @Override
+    public void distributeToSend(PINInfoBundle info) {
+        myAlarmDistributor.distributeToSend(info);
+    }
+
+    @Override
+    public void register(AlarmSender client) {
+        myAlarmDistributor.register(client);
+    }
+
+    @Override
+    public void deregister(AlarmSender client) {
+        myAlarmDistributor.deregister(client);
     }
 }
