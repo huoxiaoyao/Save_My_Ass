@@ -44,7 +44,7 @@ public class ArrowActivity extends AppCompatActivity implements
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_arrow);
+        /*setContentView(R.layout.activity_arrow);
 
         image = (ImageView) findViewById(R.id.arrowView);
 
@@ -65,7 +65,7 @@ public class ArrowActivity extends AppCompatActivity implements
         //zuerich main station, for testing
         mDestLocation= new Location("");
         mDestLocation.setLatitude(47.37794d);
-        mDestLocation.setLongitude(8.54020d);
+        mDestLocation.setLongitude(8.54020d);*/
     }
 
     protected void onResume() {

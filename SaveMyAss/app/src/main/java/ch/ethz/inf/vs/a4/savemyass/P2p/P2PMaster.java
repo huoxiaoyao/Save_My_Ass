@@ -16,6 +16,8 @@ import java.net.Socket;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import ch.ethz.inf.vs.a4.savemyass.Structure.AlarmDistributor;
 import ch.ethz.inf.vs.a4.savemyass.Structure.AlarmSender;
@@ -25,6 +27,11 @@ import ch.ethz.inf.vs.a4.savemyass.Structure.SimpleAlarmDistributor;
 
 /**
  * Created by Fabian_admin on 16.12.2015.
+ *
+ * onesided peer discovery did not work reliable, hence testing was horrible.
+ * The main structure does exist and work now,
+ * but we did not integrate this completely into the GUI/Application
+ *
  */
 public class P2PMaster implements WifiP2pManager.ConnectionInfoListener, PeerDiscoverListener,
         ServiceDestroyReceiver, AlarmDistributor, AlarmSender {
@@ -52,7 +59,8 @@ public class P2PMaster implements WifiP2pManager.ConnectionInfoListener, PeerDis
 
     private final WifiP2pDnsSdServiceInfo service;
 
-    private final List<Socket> socketList;
+    public final LinkedBlockingQueue<Socket> socketList;
+    public final ArrayBlockingQueue<SendTask> taskQueue;
 
     private boolean alarmActive = false;
 
@@ -95,7 +103,8 @@ public class P2PMaster implements WifiP2pManager.ConnectionInfoListener, PeerDis
 
         service = WifiP2pDnsSdServiceInfo.newInstance( SERVICE_INSTANCE, SERVICE_REG_TYPE, record );
 
-        socketList = new java.util.ArrayList<>();
+        socketList = new LinkedBlockingQueue<Socket>( ConfigP2p.SOCKET_QUEUE_SIZE );
+        taskQueue = new ArrayBlockingQueue<SendTask>( ConfigP2p.SEND_TASK_QUEUE_SIZE );
 
     }
 
@@ -188,7 +197,7 @@ public class P2PMaster implements WifiP2pManager.ConnectionInfoListener, PeerDis
     }
 
     public void addSocket( Socket socket ){
-        socketList.add(socket);
+        socketList.offer(socket);
     }
 
     @Override
@@ -201,7 +210,7 @@ public class P2PMaster implements WifiP2pManager.ConnectionInfoListener, PeerDis
             if (info.isGroupOwner) {
                 new GroupOwnerSocketHandler(this, SERVER_PORT).start();
             } else {
-                new ClientSocketHandler(this, info.groupOwnerAddress, SERVER_PORT, PORT).start();
+                new ClientSocketListener(this, info.groupOwnerAddress, SERVER_PORT, PORT).start();
             }
         }
     }
@@ -281,6 +290,7 @@ public class P2PMaster implements WifiP2pManager.ConnectionInfoListener, PeerDis
 
     @Override
     public void callForHelp(PINInfoBundle bundle) {
-        
+        //TODO: comment in when continue working
+        // taskQueue.offer(new SendTask(ConfigP2p.ALARM_INIT, bundle.toJSON()));
     }
 }

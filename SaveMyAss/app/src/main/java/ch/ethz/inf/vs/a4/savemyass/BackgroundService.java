@@ -41,7 +41,7 @@ public class BackgroundService extends Service implements SharedPreferences.OnSh
     private List<ServiceDestroyReceiver> serviceDestroyReceivers;
 
     //p2p
-    private OwnLocationDistributor ownLocDistr;
+    private OwnLocationDistributor ownLocDistr = null;
     public P2PMaster p2pMaster;
 
     @Override
@@ -77,7 +77,7 @@ public class BackgroundService extends Service implements SharedPreferences.OnSh
         serviceDestroyReceivers.add(locationTracker);
 
         //set up p2p only if it is wanted
-        if(sp.getBoolean(Config.SHARED_PREFS_P2P_ACTIVE, true)){
+        if(sp.getBoolean(Config.SHARED_PREFS_P2P_ACTIVE, false)){
             setupP2p();
         }
 
@@ -96,7 +96,7 @@ public class BackgroundService extends Service implements SharedPreferences.OnSh
             serviceDestroyReceivers.remove(locationTracker);
         }
         //destroy p2p if not wanted
-        if(!sp.getBoolean(Config.SHARED_PREFS_P2P_ACTIVE, true)){
+        if(!sp.getBoolean(Config.SHARED_PREFS_P2P_ACTIVE, false)){
             removeP2p();
         }
 
