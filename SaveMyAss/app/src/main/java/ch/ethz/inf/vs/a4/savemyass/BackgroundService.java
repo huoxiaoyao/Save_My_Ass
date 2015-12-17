@@ -1,6 +1,9 @@
 package ch.ethz.inf.vs.a4.savemyass;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.IBinder;
@@ -26,11 +29,12 @@ import ch.ethz.inf.vs.a4.savemyass.UI.AlarmNotifier;
  *  - other classes that implement the ServiceDestroyReceiver can "register" for getting called when
  *    the service gets killed.
  */
-public class BackgroundService extends Service{
+public class BackgroundService extends Service implements SharedPreferences.OnSharedPreferenceChangeListener{
 
     public String TAG = "###BackgroundService";
 
     public SimpleAlarmDistributor alarmDistributor, uiDistributor;
+    private LocationTracker locationTracker;
 
     private List<ServiceDestroyReceiver> serviceDestroyReceivers;
 
@@ -56,15 +60,30 @@ public class BackgroundService extends Service{
         alarmDistributor = new SimpleAlarmDistributor();
 
         // set up the centralized stuff
-        LocationTracker locationTracker = new LocationTracker(getApplicationContext());
+        locationTracker = new LocationTracker(getApplicationContext());
 
-        // todo implement this!
         AlarmDistributor gcmDistributor = new AlarmDistributor(getApplicationContext());
         alarmDistributor.register(gcmDistributor);
 
         // set up service destroy receivers
         serviceDestroyReceivers = new LinkedList<>();
         serviceDestroyReceivers.add(locationTracker);
+
+        // register alarm manager to check if service is running and start it in cases it's no yet
+        // running (done in WakefulServiceStarter)
+        AlarmManager alarmMgr = (AlarmManager) getApplicationContext().getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent(getApplicationContext(), WakefulServiceStarter.class);
+        PendingIntent alarmIntent = PendingIntent.getBroadcast(getApplicationContext(), 0, intent, 0);
+
+        alarmMgr.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                AlarmManager.INTERVAL_FIFTEEN_MINUTES,
+                AlarmManager.INTERVAL_FIFTEEN_MINUTES, alarmIntent);
+        if(!sp.getBoolean(Config.SHARED_PREFS_CENTRALIZED_ACTIVE, true)){
+            locationTracker.onServiceDestroy();
+            serviceDestroyReceivers.remove(locationTracker);
+        }
+
+        sp.registerOnSharedPreferenceChangeListener(this);
     }
 
     @Override
@@ -84,5 +103,20 @@ public class BackgroundService extends Service{
     @Override
     public IBinder onBind(Intent intent) {
         return null;
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        if(key.equals(Config.SHARED_PREFS_CENTRALIZED_ACTIVE)){
+            boolean b = sharedPreferences.getBoolean(key, true);
+            if(!b && locationTracker != null){
+                locationTracker.onServiceDestroy();
+                locationTracker = null;
+            }
+            else{
+                locationTracker = new LocationTracker(getApplicationContext());
+                serviceDestroyReceivers.add(locationTracker);
+            }
+        }
     }
 }

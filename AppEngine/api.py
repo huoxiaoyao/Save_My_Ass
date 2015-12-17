@@ -73,6 +73,7 @@ class SaveMyAssAPI(remote.Service):
 
         # create the geohash startAt and endAt
         ghash = geohash.encode(latitude, longitude, precision=5)
+        ghash_p = geohash.encode(latitude, longitude, precision=10)
         borders = geohash.expand(ghash)
 
         start_at = min(borders)
@@ -108,7 +109,7 @@ class SaveMyAssAPI(remote.Service):
         # Step 3: create the Firebase Alarm Object
         url = 'https://savemya.firebaseio.com/alarms.json?auth=' + FIREBASE_TOKEN
         alarm_data = {"active": True,
-                      "pin": {"user_id": user_id + salt, "location": {"g": hash, "l": [longitude, latitude]}},
+                      "pin": {"user_id": user_id + salt, "location": {"g": ghash_p, "l": [latitude, longitude]}},
                       "helpers": []}
         alarm_result = urlfetch.fetch(url=url, method=urlfetch.POST, payload=json.dumps(alarm_data))
         if alarm_result.status_code != 200:

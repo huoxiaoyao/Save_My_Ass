@@ -4,7 +4,9 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.media.RingtoneManager;
+import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 
 import ch.ethz.inf.vs.a4.savemyass.Centralized.Config;
@@ -21,7 +23,7 @@ import ch.ethz.inf.vs.a4.savemyass.Structure.PINInfoBundle;
 public class AlarmNotifier implements AlarmSender {
 
     protected static final String TAG = "###AlarmNotifier";
-    private static final int notificationID = 666;
+    public static final int notificationID = 666;
     private final Context ctx;
 
     public AlarmNotifier(Context ctx){
@@ -38,16 +40,17 @@ public class AlarmNotifier implements AlarmSender {
      * note: if ID stays unchanged it just updates the notification...
      */
     private void showNotification(PINInfoBundle bundle) {
-        String title = "Save My Ass - Alarm!";
+        String title = ctx.getString(R.string.app_name);
         // initialize the notification
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(ctx)
-                        .setSmallIcon(R.mipmap.ic_launcher)
+                        .setSmallIcon(R.mipmap.ic_launcher_logo)
                         .setContentTitle(title)
-                        .setContentText(bundle.toString())
-                        .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
+                        .setContentText(ctx.getString(R.string.alarm_triggered_notification))
+                        .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
+                        .setAutoCancel(true);
         Intent resultIntent = new Intent(ctx, HelpOthers.class);
-        // pass the infobundle as an extra to the activity
+        // pass the info-bundle as an extra to the activity
         resultIntent.putExtra(Config.INTENT_INFO_BUNDLE, bundle);
         PendingIntent resultPendingIntent =
                 PendingIntent.getActivity(
@@ -59,8 +62,12 @@ public class AlarmNotifier implements AlarmSender {
         mBuilder.setContentIntent(resultPendingIntent);
         NotificationManager mNotificationManager =
                 (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
+
         //  allows you to update the notification later on.
-        mNotificationManager.notify(notificationID, mBuilder.build());
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(ctx.getApplicationContext());
+        boolean alreadyActive = sp.getBoolean(Config.SHARED_PREFS_ALARM_ACTIVE, false);
+        if(!alreadyActive)
+            mNotificationManager.notify(notificationID, mBuilder.build());
     }
 
 }
