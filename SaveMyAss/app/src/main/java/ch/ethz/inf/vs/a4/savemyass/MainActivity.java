@@ -90,6 +90,7 @@ public class MainActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
 
         SharedPreferences sp =  PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        sp.edit().putBoolean(Config.SHARED_PREFS_ALARM_ACTIVE, false).apply();
         boolean info = sp.getBoolean(Config.SHARED_PREFS_FIRSTOPEN, true);
         if(info){
             sp.edit().putBoolean(Config.SHARED_PREFS_FIRSTOPEN, false).apply();

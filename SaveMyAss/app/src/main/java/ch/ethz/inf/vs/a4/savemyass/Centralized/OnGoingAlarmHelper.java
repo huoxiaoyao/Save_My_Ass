@@ -69,7 +69,16 @@ public class OnGoingAlarmHelper implements HelperOrPinLocationUpdate, ChildEvent
     }
 
     @Override
-    public void onChildAdded(DataSnapshot dataSnapshot, String s) {}
+    public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+        if(dataSnapshot.getKey().equals("active")) {
+            boolean active = (boolean) dataSnapshot.getValue();
+            if (!active) {
+                activeRef.removeEventListener(this);
+                for (AlarmCancelReceiver r : cancelReceivers)
+                    r.onCancel();
+            }
+        }
+    }
 
     @Override
     public void onChildChanged(DataSnapshot dataSnapshot, String s) {

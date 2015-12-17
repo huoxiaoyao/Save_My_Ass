@@ -4,7 +4,9 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.media.RingtoneManager;
+import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 
 import ch.ethz.inf.vs.a4.savemyass.Centralized.Config;
@@ -48,7 +50,7 @@ public class AlarmNotifier implements AlarmSender {
                         .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
                         .setAutoCancel(true);
         Intent resultIntent = new Intent(ctx, HelpOthers.class);
-        // pass the infobundle as an extra to the activity
+        // pass the info-bundle as an extra to the activity
         resultIntent.putExtra(Config.INTENT_INFO_BUNDLE, bundle);
         PendingIntent resultPendingIntent =
                 PendingIntent.getActivity(
@@ -60,8 +62,12 @@ public class AlarmNotifier implements AlarmSender {
         mBuilder.setContentIntent(resultPendingIntent);
         NotificationManager mNotificationManager =
                 (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
+
         //  allows you to update the notification later on.
-        mNotificationManager.notify(notificationID, mBuilder.build());
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(ctx.getApplicationContext());
+        boolean alreadyActive = sp.getBoolean(Config.SHARED_PREFS_ALARM_ACTIVE, false);
+        if(!alreadyActive)
+            mNotificationManager.notify(notificationID, mBuilder.build());
     }
 
 }

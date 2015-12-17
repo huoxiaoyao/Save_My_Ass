@@ -71,15 +71,20 @@ public class HelpOthers extends AppCompatActivity implements OnMapReadyCallback,
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
+        // get the infoBundle from the intent
         infoBundle = getIntent().getParcelableExtra(Config.INTENT_INFO_BUNDLE);
 
+        // so that we don't receive new notification when the activity has already been started...
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        sp.edit().putBoolean(Config.SHARED_PREFS_ALARM_ACTIVE, true).apply();
+
+        // get the message of the pin and display it
         TextView msgView = (TextView) findViewById(R.id.msg);
         String msg = getString(R.string.message_prefix);
         if(infoBundle.message.equals(""))
             msg += getString(R.string.no_personal_message);
         else
             msg += infoBundle.message;
-
         msgView.setText(msg);
 
         accept = (Button) findViewById(R.id.accept);
@@ -110,7 +115,6 @@ public class HelpOthers extends AppCompatActivity implements OnMapReadyCallback,
         buildGoogleApiClient();
         mGoogleApiClient.connect();
 
-        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
         String firebaseUrl = sp.getString(Config.INTENT_FIREBASE_ALARM_URL, "");
         OnGoingAlarmHelper alarm = new OnGoingAlarmHelper(getApplicationContext(), firebaseUrl, mapCombiner, infoBundle);
         alarm.registerOnCancelListener(this);
@@ -142,6 +146,9 @@ public class HelpOthers extends AppCompatActivity implements OnMapReadyCallback,
 
     @Override
     protected void onDestroy() {
+        // todo: reset active alarm flag in shared prefs
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
+        sp.edit().putBoolean(Config.SHARED_PREFS_ALARM_ACTIVE, false).apply();
         mGoogleApiClient.disconnect();
         super.onDestroy();
     }
@@ -213,9 +220,6 @@ public class HelpOthers extends AppCompatActivity implements OnMapReadyCallback,
     @Override
     public void onCancel() {
         mGoogleApiClient.disconnect();
-        String text = getString(R.string.alarm_cancelled);
-        Toast toast = Toast.makeText(getApplicationContext(), text, Toast.LENGTH_LONG);
-        toast.show();
         String title = getString(R.string.app_name);
         // initialize the notification
         NotificationCompat.Builder mBuilder =
@@ -237,8 +241,12 @@ public class HelpOthers extends AppCompatActivity implements OnMapReadyCallback,
         NotificationManager mNotificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         //  allows you to update the notification later on.
-        if(!declined)
+        if(!declined) {
             mNotificationManager.notify(AlarmNotifier.notificationID, mBuilder.build());
+            String text = getString(R.string.alarm_cancelled);
+            Toast toast = Toast.makeText(getApplicationContext(), text, Toast.LENGTH_LONG);
+            toast.show();
+        }
         finish();
     }
 

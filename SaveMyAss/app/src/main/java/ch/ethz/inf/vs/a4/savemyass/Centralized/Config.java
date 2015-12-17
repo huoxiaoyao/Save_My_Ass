@@ -26,6 +26,7 @@ public class Config {
     public static String SHARED_PREFS_CENTRALIZED_ACTIVE = "centralized_active";
     public static String SHARED_PREFS_P2P_ACTIVE = "p2p_active";
     public static String SHARED_PREFS_FIRSTOPEN = "firstopen";
+    public static String SHARED_PREFS_ALARM_ACTIVE = "alarm_active";
 
     // Intent extra strings
     public static String INTENT_NEW_TOKEN = "newToken";
