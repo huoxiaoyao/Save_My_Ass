@@ -1,14 +1,20 @@
 package ch.ethz.inf.vs.a4.savemyass;
 
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.location.Location;
+import android.media.RingtoneManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -22,6 +28,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.LinkedList;
@@ -30,21 +37,25 @@ import java.util.List;
 import ch.ethz.inf.vs.a4.savemyass.Centralized.Config;
 import ch.ethz.inf.vs.a4.savemyass.Centralized.OnGoingAlarmHelper;
 import ch.ethz.inf.vs.a4.savemyass.Structure.AlarmCancelReceiver;
-import ch.ethz.inf.vs.a4.savemyass.Structure.HelperLocationUpdate;
+import ch.ethz.inf.vs.a4.savemyass.Structure.HelperMapUpdateReceiver;
+import ch.ethz.inf.vs.a4.savemyass.Structure.HelperOrPinLocationUpdate;
 import ch.ethz.inf.vs.a4.savemyass.Structure.PINInfoBundle;
+import ch.ethz.inf.vs.a4.savemyass.UI.AlarmNotifier;
 
 public class HelpOthers extends AppCompatActivity implements OnMapReadyCallback,
         LocationListener, GoogleApiClient.ConnectionCallbacks,
-    GoogleApiClient.OnConnectionFailedListener, AlarmCancelReceiver {
+    GoogleApiClient.OnConnectionFailedListener, AlarmCancelReceiver,
+        HelperMapUpdateReceiver{
 
     private static final String TAG = "###HepOthers";
 
-    private GoogleMap mMap;
     private PINInfoBundle infoBundle;
-    private Button accept;
-    private List<HelperLocationUpdate> locationUpdates;
+    private List<HelperOrPinLocationUpdate> locationUpdates;
     private boolean accepted;
     private Location lastLocation;
+    private HelperMapCombiner mapCombiner;
+    private Marker pinMarker;
+    private boolean declined;
 
     // entry point for Google Play services (used for getting the location)
     protected GoogleApiClient mGoogleApiClient;
@@ -58,12 +69,23 @@ public class HelpOthers extends AppCompatActivity implements OnMapReadyCallback,
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
+        // get the infoBundle from the intent
         infoBundle = getIntent().getParcelableExtra(Config.INTENT_INFO_BUNDLE);
 
-        TextView msg = (TextView) findViewById(R.id.msg);
-        msg.setText(infoBundle.message);
+        // so that we don't receive new notification when the activity has already been started...
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        sp.edit().putBoolean(Config.SHARED_PREFS_ALARM_ACTIVE, true).apply();
 
-        accept = (Button) findViewById(R.id.accept);
+        // get the message of the pin and display it
+        TextView msgView = (TextView) findViewById(R.id.msg);
+        String msg = getString(R.string.message_prefix);
+        if(infoBundle.message.equals(""))
+            msg += getString(R.string.no_personal_message);
+        else
+            msg += infoBundle.message;
+        msgView.setText(msg);
+
+        Button accept = (Button) findViewById(R.id.accept);
         accept.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -75,6 +97,7 @@ public class HelpOthers extends AppCompatActivity implements OnMapReadyCallback,
         decline.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                declined = true;
                 finish();
             }
         });
@@ -82,13 +105,16 @@ public class HelpOthers extends AppCompatActivity implements OnMapReadyCallback,
         // the list of HelperLocationUpdate implementation that will get called if the location changes
         locationUpdates = new LinkedList<>();
 
+        // create the map combiner
+        mapCombiner = new HelperMapCombiner();
+        mapCombiner.register(this);
+
         // build Google API client to get the last known location
         buildGoogleApiClient();
         mGoogleApiClient.connect();
 
-        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
         String firebaseUrl = sp.getString(Config.INTENT_FIREBASE_ALARM_URL, "");
-        OnGoingAlarmHelper alarm = new OnGoingAlarmHelper(getApplicationContext(), firebaseUrl);
+        OnGoingAlarmHelper alarm = new OnGoingAlarmHelper(getApplicationContext(), firebaseUrl, mapCombiner, infoBundle);
         alarm.registerOnCancelListener(this);
         locationUpdates.add(alarm);
     }
@@ -104,23 +130,22 @@ public class HelpOthers extends AppCompatActivity implements OnMapReadyCallback,
      * installed Google Play services and returned to the app.
      */
     @Override
-    public void onMapReady(GoogleMap googleMap) {
-        mMap = googleMap;
-
+    public void onMapReady(GoogleMap mMap) {
         // Add a marker in Sydney and move the camera
         LatLng pin = new LatLng(infoBundle.loc.getLatitude(), infoBundle.loc.getLongitude());
-        mMap.addMarker(new MarkerOptions().position(pin).title("Person in need of help"));
+        pinMarker = mMap.addMarker(new MarkerOptions().position(pin).title(getString(R.string.person_in_need_of_help_map_info)));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(pin));
         mMap.setMyLocationEnabled(true);
-    }
-
-    public void onClick(View v){
-        Intent intent = new Intent(this, HelpRequest.class);
-        startActivity(intent);
+        LatLng loc = new LatLng(infoBundle.loc.getLatitude(), infoBundle.loc.getLongitude());
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(loc, (float) 14.5));
     }
 
     @Override
     protected void onDestroy() {
+        // reset active alarm flag in shared prefs
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
+        sp.edit().putBoolean(Config.SHARED_PREFS_ALARM_ACTIVE, false).apply();
+        // destroy google api client
         mGoogleApiClient.disconnect();
         super.onDestroy();
     }
@@ -149,8 +174,8 @@ public class HelpOthers extends AppCompatActivity implements OnMapReadyCallback,
     @Override
     public void onLocationChanged(Location location) {
         if(accepted) {
-            for (HelperLocationUpdate l : locationUpdates)
-                l.onHelperLocationUpdate(location);
+            for (HelperOrPinLocationUpdate l : locationUpdates)
+                l.onLocationUpdate(location);
         }
         lastLocation = location;
     }
@@ -161,8 +186,8 @@ public class HelpOthers extends AppCompatActivity implements OnMapReadyCallback,
         LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, createLocationRequest(), this);
         Location loc = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
         if(accepted) {
-            for (HelperLocationUpdate l : locationUpdates)
-                l.onHelperLocationUpdate(loc);
+            for (HelperOrPinLocationUpdate l : locationUpdates)
+                l.onLocationUpdate(loc);
         }
         lastLocation = loc;
     }
@@ -181,21 +206,53 @@ public class HelpOthers extends AppCompatActivity implements OnMapReadyCallback,
         mGoogleApiClient.connect();
     }
 
-
     private void onAccept(){
-        accept.setClickable(false);
+        LinearLayout requestLayout = (LinearLayout) findViewById(R.id.requestLayout);
+        requestLayout.removeViewAt(requestLayout.getChildCount() - 1);
         accepted = true;
-        for (HelperLocationUpdate l : locationUpdates)
-            l.onHelperLocationUpdate(lastLocation);
+        for (HelperOrPinLocationUpdate l : locationUpdates)
+            l.onLocationUpdate(lastLocation);
     }
 
     @Override
     public void onCancel() {
         mGoogleApiClient.disconnect();
-        String text = getString(R.string.alarm_cancelled);
-        Toast toast = Toast.makeText(getApplicationContext(), text, Toast.LENGTH_LONG);
-        toast.show();
+        String title = getString(R.string.app_name);
+        // initialize the notification
+        NotificationCompat.Builder mBuilder =
+                new NotificationCompat.Builder(getApplicationContext())
+                        .setSmallIcon(R.mipmap.ic_launcher_logo)
+                        .setContentTitle(title)
+                        .setContentText(getString(R.string.alarm_cancelled))
+                        .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
+                        .setAutoCancel(true);
+        Intent resultIntent = new Intent(getApplicationContext(), MainActivity.class);
+        PendingIntent resultPendingIntent =
+                PendingIntent.getActivity(
+                        getApplicationContext(),
+                        0,
+                        resultIntent,
+                        PendingIntent.FLAG_UPDATE_CURRENT
+                );
+        mBuilder.setContentIntent(resultPendingIntent);
+        NotificationManager mNotificationManager =
+                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        //  allows you to update the notification later on.
+        if(!declined) {
+            mNotificationManager.notify(AlarmNotifier.notificationID, mBuilder.build());
+            String text = getString(R.string.alarm_cancelled);
+            Toast toast = Toast.makeText(getApplicationContext(), text, Toast.LENGTH_LONG);
+            toast.show();
+        }
         finish();
+    }
+
+    // mapCombiner update: gets called when the map combiner gets an update of the pin location
+    @Override
+    public void onUpdate() {
+        Location newLoc = (Location) mapCombiner.getMap().values().toArray()[0];
+        LatLng loc = new LatLng(newLoc.getLatitude(), newLoc.getLongitude());
+        pinMarker.setPosition(loc);
     }
 }
 

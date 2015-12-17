@@ -191,6 +191,11 @@ public class OnGoingAlarmWatchdog extends OnGoingAlarm implements LocationListen
                         if (timer != null)
                             timer.cancel();
                     }
+                    else{
+                        mGoogleApiClient.disconnect();
+                        if (timer != null)
+                            timer.cancel();
+                    }
                 }
 
                 @Override
@@ -228,6 +233,7 @@ public class OnGoingAlarmWatchdog extends OnGoingAlarm implements LocationListen
     private void startAlarm() {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(ctx);
         sp.edit().putString(Config.INTENT_FIREBASE_ALARM_URL, firebaseURL).apply();
+        mGoogleApiClient.disconnect();
         AlarmNotifier ai = new AlarmNotifier(ctx);
         ai.callForHelp(pinInfoBundle);
     }

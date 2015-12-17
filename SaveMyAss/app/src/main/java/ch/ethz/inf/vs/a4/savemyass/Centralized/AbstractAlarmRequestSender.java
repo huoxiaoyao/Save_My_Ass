@@ -3,6 +3,7 @@ package ch.ethz.inf.vs.a4.savemyass.Centralized;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+import android.provider.Settings;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -43,6 +44,8 @@ public abstract class AbstractAlarmRequestSender implements AlarmSender{
         }
         infoBundle = bundle;
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(ctx);
+        bundle.userID = Settings.Secure.getString(ctx.getContentResolver(),
+                Settings.Secure.ANDROID_ID);
         JSONObject request = bundle.toJSON();
         try {
             request.put("salt", sp.getString(Config.SHARED_PREFS_SALT, ""));
@@ -53,32 +56,4 @@ public abstract class AbstractAlarmRequestSender implements AlarmSender{
             e.printStackTrace();
         }
     }
-
-    //@Override
-/*    public void onResponseReceive(JSONObject response) { if(response == null){
-            Log.d(TAG, "server responded with null");
-            Toast toast = Toast.makeText(ctx, "server responded with null", Toast.LENGTH_SHORT);
-            toast.show();
-            return;
-        }
-
-        //todo: do appropriate error handling here!
-
-        //todo: implement the case where we want to send someone else's alarm further on (got to us by p2p)
-        if(response.has("error")) {
-            Log.d(TAG, "couldn't trigger alarm");
-        }
-        else {
-            try {
-                String url = response.getString("node");
-                Intent i = new Intent(Config.LOCAL_BROADCAST_PIN_ALARM_INFO);
-                i.putExtra(Config.INTENT_FIREBASE_ALARM_URL, Config.FIREBASE_BASE_ADDRESS+url+"/");
-                i.putExtra(Config.INTENT_INFO_BUNDLE, infoBundle);
-                LocalBroadcastManager.getInstance(ctx.getApplicationContext()).sendBroadcast(i);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-            Log.d(TAG, "successfully triggered the alarm!");
-        }
-    }*/
 }

@@ -7,6 +7,6 @@ import android.location.Location;
  *
  * Interface for handling location updates from a client from a client
  */
-public interface HelperLocationUpdate {
-    void onHelperLocationUpdate(Location loc);
+public interface HelperOrPinLocationUpdate {
+    void onLocationUpdate(Location loc);
 }

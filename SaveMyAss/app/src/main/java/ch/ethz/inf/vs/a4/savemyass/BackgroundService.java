@@ -62,7 +62,6 @@ public class BackgroundService extends Service implements SharedPreferences.OnSh
         // set up the centralized stuff
         locationTracker = new LocationTracker(getApplicationContext());
 
-        // todo implement this!
         AlarmDistributor gcmDistributor = new AlarmDistributor(getApplicationContext());
         alarmDistributor.register(gcmDistributor);
 

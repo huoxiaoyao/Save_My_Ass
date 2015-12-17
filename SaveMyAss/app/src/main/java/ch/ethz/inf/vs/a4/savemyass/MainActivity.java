@@ -10,8 +10,10 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.provider.Settings;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -26,7 +28,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import ch.ethz.inf.vs.a4.savemyass.Centralized.Config;
@@ -43,16 +44,12 @@ public class MainActivity extends AppCompatActivity
 
     private BroadcastReceiver RegistrationBroadcastReceiver;
 
-    private ProgressBar RegistrationProgressBar;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // dummy log for development purposes
-        //log = (TextView) findViewById(R.id.log);
-
+        // Android 6+ permission checks...
         boolean location, contacts;
         location = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED;
@@ -93,13 +90,60 @@ public class MainActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
 
         SharedPreferences sp =  PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        sp.edit().putBoolean(Config.SHARED_PREFS_ALARM_ACTIVE, false).apply();
         boolean info = sp.getBoolean(Config.SHARED_PREFS_FIRSTOPEN, true);
         if(info){
             sp.edit().putBoolean(Config.SHARED_PREFS_FIRSTOPEN, false).apply();
             Intent i = new Intent(getApplicationContext(), Intro.class);
             startActivity(i);
         }
+    }
 
+    @Override
+    protected void onStart() {
+        // check if location service is enabled, otherwise guide the user to the respective settings
+        LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        boolean gps_enabled = false;
+
+        try {
+            gps_enabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
+        } catch(Exception ex) {
+            ex.printStackTrace();
+        }
+
+        if(!gps_enabled) {
+            // notify user
+            AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+            dialog.setMessage(getString(R.string.gps_network_not_enabled));
+            dialog.setPositiveButton(getString(R.string.open_location_settings), new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface paramDialogInterface, int paramInt) {
+                    Intent i = new Intent( Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                    startActivity(i);
+                }
+            });
+            dialog.setNegativeButton(getString(R.string.dont_open_location_settings), new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface paramDialogInterface, int paramInt) {
+                    finish();
+                }
+            });
+            dialog.show();
+        }
+        super.onStart();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        LocalBroadcastManager.getInstance(this).registerReceiver(RegistrationBroadcastReceiver,
+                new IntentFilter(Config.REGISTRATION_COMPLETE_BROADCAST));
+    }
+
+    @Override
+    protected void onPause() {
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(RegistrationBroadcastReceiver);
+        super.onPause();
     }
 
     @Override
@@ -118,15 +162,12 @@ public class MainActivity extends AppCompatActivity
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         //sharedPreferences.edit().putBoolean(Config.SENT_TOKEN_TO_SERVER, false).apply();
 
-        // progress bar that is used for the registration for the centralized approach
-        // todo add the progress bar to the layout
         //RegistrationProgressBar = (ProgressBar) findViewById(R.id.registrationProgressBar);
         if(!sharedPreferences.getBoolean(Config.SENT_TOKEN_TO_SERVER, false)){
             // broadcast receiver that gets event as soon as server responded...
             RegistrationBroadcastReceiver = new BroadcastReceiver() {
                 @Override
                 public void onReceive(Context context, Intent intent) {
-                    //RegistrationProgressBar.setVisibility(ProgressBar.GONE);
                     SharedPreferences sp =  PreferenceManager.getDefaultSharedPreferences(context);
                     boolean sentToken = sp.getBoolean(Config.SENT_TOKEN_TO_SERVER, false);
                     boolean centralized = sp.getBoolean(Config.SHARED_PREFS_CENTRALIZED_ACTIVE, false);
@@ -141,28 +182,8 @@ public class MainActivity extends AppCompatActivity
             startService(i);
             Log.d(TAG, "GCMRegistrationIntentService has been started");
         }
-        else{
-            //RegistrationProgressBar.setVisibility(ProgressBar.GONE);
-        }
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        LocalBroadcastManager.getInstance(this).registerReceiver(RegistrationBroadcastReceiver,
-                new IntentFilter(Config.REGISTRATION_COMPLETE_BROADCAST));
-    }
-
-    @Override
-    protected void onPause() {
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(RegistrationBroadcastReceiver);
-        super.onPause();
-    }
 
     @Override
     public void onBackPressed() {
