@@ -3,7 +3,7 @@
     <item android:state_pressed="true">
         <shape>
             <solid
-                android:color="@color/background" />
+                android:color="@color/primary_light" />
 
             <corners
                 android:radius="6dp" />
@@ -23,7 +23,7 @@
                 android:type="linear"
                 android:angle="135"/>-->
             <solid
-                android:color="@color/accent" />
+                android:color="@color/primary_light" />
             <corners
                 android:radius="0dp" />
             <stroke

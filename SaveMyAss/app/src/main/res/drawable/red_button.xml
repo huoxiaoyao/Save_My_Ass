@@ -3,9 +3,8 @@
     <item android:state_pressed="true">
         <shape>
             <solid
-                android:color="@color/accent" />
-            <corners
-                android:radius="6dp" />
+                android:color="@color/divider" />
+
             <padding
                 android:left="10dp"
                 android:top="10dp"
@@ -15,19 +14,8 @@
     </item>
     <item>
         <shape>
-            <!--<gradient
-                android:startColor="#1695A3"
-                android:centerColor="#337DB5"
-                android:endColor="#ACF0F2"
-                android:type="linear"
-                android:angle="135"/>-->
             <solid
-                android:color="#31353D" />
-            <corners
-                android:radius="0dp" />
-            <stroke
-                android:width="15dp"
-                android:color="#EEEFF7" />
+                android:color="@color/accent" />
             <padding
                 android:left="10dp"
                 android:top="10dp"
