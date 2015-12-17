@@ -31,12 +31,14 @@ class AlarmRequest(messages.Message):
     user_id = messages.StringField(1, required=True)
     location = messages.MessageField(Location, 2, required=True)
     salt = messages.StringField(3, required=True)
+    msg = messages.StringField(4, required=True)
 
 
 class AlarmResponse(messages.Message):
     code = messages.IntegerField(1, required=True)
     msg = messages.StringField(2, required=True)
     node = messages.StringField(3)
+
 
 
 @endpoints.api(name='savemyass', version='v1')
@@ -126,7 +128,7 @@ class SaveMyAssAPI(remote.Service):
             return AlarmResponse(code=300, msg="Es wurden keine Helfer in der Naehe gefunden.")
 
         headers = {"Authorization": "key=" + GSM_TOKEN, "Content-Type": "application/json"}
-        data = {"data": {"longitude": longitude, "latitude": latitude, "node": node, "user": user_id},
+        data = {"data": {"longitude": longitude, "latitude": latitude, "node": node, "user": user_id, "msg":request.msg},
                 "registration_ids": helper_token}
         gsm_result = urlfetch.fetch(url="https://gcm-http.googleapis.com/gcm/send", method=urlfetch.POST,
                                     headers=headers, payload=json.dumps(data))
