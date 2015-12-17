@@ -28,6 +28,7 @@ import ch.ethz.inf.vs.a4.savemyass.R;
  * if everything went right it sets SENT_TOKEN_TO_SERVER in shared prefs to true, otherwise to false
  *
  * start an instance of this service intent whenever the user_id is not set in the shared preferences
+ * or SENT_TOKEN_TO_SERVER is false.
  *
  */
 public class GCMRegistrationIntentService extends IntentService {

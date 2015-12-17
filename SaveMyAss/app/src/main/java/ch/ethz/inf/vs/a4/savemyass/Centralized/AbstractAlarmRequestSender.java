@@ -3,6 +3,7 @@ package ch.ethz.inf.vs.a4.savemyass.Centralized;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+import android.provider.Settings;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -43,6 +44,8 @@ public abstract class AbstractAlarmRequestSender implements AlarmSender{
         }
         infoBundle = bundle;
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(ctx);
+        bundle.userID = Settings.Secure.getString(ctx.getContentResolver(),
+                Settings.Secure.ANDROID_ID);
         JSONObject request = bundle.toJSON();
         try {
             request.put("salt", sp.getString(Config.SHARED_PREFS_SALT, ""));

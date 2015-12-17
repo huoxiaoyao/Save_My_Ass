@@ -49,9 +49,7 @@ public class HelpOthers extends AppCompatActivity implements OnMapReadyCallback,
 
     private static final String TAG = "###HepOthers";
 
-    private GoogleMap mMap;
     private PINInfoBundle infoBundle;
-    private Button accept;
     private List<HelperOrPinLocationUpdate> locationUpdates;
     private boolean accepted;
     private Location lastLocation;
@@ -87,7 +85,7 @@ public class HelpOthers extends AppCompatActivity implements OnMapReadyCallback,
             msg += infoBundle.message;
         msgView.setText(msg);
 
-        accept = (Button) findViewById(R.id.accept);
+        Button accept = (Button) findViewById(R.id.accept);
         accept.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -132,9 +130,7 @@ public class HelpOthers extends AppCompatActivity implements OnMapReadyCallback,
      * installed Google Play services and returned to the app.
      */
     @Override
-    public void onMapReady(GoogleMap googleMap) {
-        mMap = googleMap;
-
+    public void onMapReady(GoogleMap mMap) {
         // Add a marker in Sydney and move the camera
         LatLng pin = new LatLng(infoBundle.loc.getLatitude(), infoBundle.loc.getLongitude());
         pinMarker = mMap.addMarker(new MarkerOptions().position(pin).title(getString(R.string.person_in_need_of_help_map_info)));

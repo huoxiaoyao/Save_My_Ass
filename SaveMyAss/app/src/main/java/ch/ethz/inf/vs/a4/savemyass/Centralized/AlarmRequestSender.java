@@ -9,7 +9,6 @@ import org.json.JSONObject;
 import ch.ethz.inf.vs.a4.savemyass.HelpRequest;
 import ch.ethz.inf.vs.a4.savemyass.HelperMapCombiner;
 
-
 /**
  * Created by jan on 12.12.15.
  *

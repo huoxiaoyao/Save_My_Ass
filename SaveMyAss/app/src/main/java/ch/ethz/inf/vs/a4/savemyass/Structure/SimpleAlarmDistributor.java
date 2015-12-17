@@ -5,13 +5,14 @@ import java.util.List;
 
 /**
  * Created by Fabian_admin on 20.11.2015.
+ *
  */
 public class SimpleAlarmDistributor implements AlarmDistributor{
     //use as delegate to send alarms
     List<AlarmSender> senders;
 
     public SimpleAlarmDistributor() {
-        senders = new LinkedList<AlarmSender>();
+        senders = new LinkedList<>();
     }
 
     @Override

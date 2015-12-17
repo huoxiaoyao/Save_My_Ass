@@ -43,7 +43,6 @@ public class Config {
     public static double[] WATCHDOG_RADIUS = {0.25, 0.5, 1, ALARM_DISTANCE_THRESHOLD};//the steps that the watchdog makes when increasing the radius around the person in need
     public static int[] WATCHDOG_TIMES = {10, 15, 15}; //after the first element seconds the radius will be increased to the second radius value above and so on...
 
-
     // dummy location used for triggering alarms in the emulator
     public static Location DUMMY_LOC() {
         Location loc = new Location("");

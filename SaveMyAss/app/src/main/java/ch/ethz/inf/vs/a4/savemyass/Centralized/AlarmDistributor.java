@@ -9,7 +9,8 @@ import org.json.JSONObject;
 /**
  * Created by jan on 11.12.15.
  *  
- *
+ * alarm got to us by p2p and we want to distribute it, so we just send the appropriate info bundle
+ * to the server.
  */
 public class AlarmDistributor extends AbstractAlarmRequestSender implements ResponseListener{
 
