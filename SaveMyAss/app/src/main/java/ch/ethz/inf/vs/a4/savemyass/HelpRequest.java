@@ -117,7 +117,8 @@ public class HelpRequest extends AppCompatActivity implements OnMapReadyCallback
 
     @Override
     protected void onDestroy() {
-        mGoogleApiClient.disconnect();
+        // if the user just swipes away the activity we want to cancel the alarm
+        cancelAlarm();
         super.onDestroy();
     }
 
