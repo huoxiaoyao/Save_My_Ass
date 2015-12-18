@@ -26,6 +26,7 @@
     <string name="open_location_settings">go to location settings</string>
     <string name="dont_open_location_settings">close app</string>
     <string name="on_off_mode_description">You can enable or dissable to two means of comunication. The Server Connection only works if there\'s an active internet connection available (charges may apply). The p2p connection also works without an active internet connection but may influence your battery usage. Please make sure at least one is enabled, otherwise you won\'t be able to receive emergency messages from other people.</string>
+    <string name="about">About</string>
 
     <string name="intro_welcome">Welcome to SaveMyAss</string>
     <string name="intro_welcome_text"></string>
@@ -35,4 +36,8 @@
     <string name="intro_p2p_text">In case of an emergency, you can connect to devices near to you.</string>
     <string name="intro_security">Security</string>
     <string name="intro_security_text">Your location is stored secure and hidden from others.</string>
+    <string name="cancel">cancel</string>
+    <string name="yes">yes</string>
+    <string name="really_start_alarm">Do you really want to start the alarm?</string>
+    <string name="really_cancel_alarm">Do you really want to cancel the alarm?</string>
 </resources>

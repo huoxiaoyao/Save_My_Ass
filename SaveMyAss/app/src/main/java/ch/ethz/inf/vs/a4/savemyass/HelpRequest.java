@@ -1,5 +1,7 @@
 package ch.ethz.inf.vs.a4.savemyass;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.location.Location;
 import android.os.Bundle;
@@ -82,9 +84,34 @@ public class HelpRequest extends AppCompatActivity implements OnMapReadyCallback
         cancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                cancelAlarm();
+                showSimplePopUp();
             }
         });
+    }
+
+    // shows a popup where the user can choose whether he really want to abort or not
+    private void showSimplePopUp() {
+        AlertDialog.Builder helpBuilder = new AlertDialog.Builder(this);
+        helpBuilder.setTitle(getString(R.string.really_cancel_alarm));
+
+        helpBuilder.setNeutralButton(getString(R.string.cancel),
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // nothing here
+                    }
+                }
+        );
+
+        helpBuilder.setPositiveButton(getString(R.string.yes),
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        cancelAlarm();
+                    }
+
+                });
+
+        AlertDialog helpDialog = helpBuilder.create();
+        helpDialog.show();
     }
 
 
@@ -143,8 +170,8 @@ public class HelpRequest extends AppCompatActivity implements OnMapReadyCallback
     // creates location request
     private LocationRequest createLocationRequest() {
         LocationRequest mLocationRequest = new LocationRequest();
-        mLocationRequest.setInterval(Config.LOCATION_TRACKER_UPDATE_PERIOD);
-        mLocationRequest.setFastestInterval(Config.LOCATION_TRACKER_UPDATE_PERIOD_MIN);
+        mLocationRequest.setInterval(Config.ALARM_LOCATION_UPDATE_PERIOD);
+        mLocationRequest.setFastestInterval(Config.ALARM_LOCATION_UPDATE_PERIOD_MIN);
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
         return mLocationRequest;
     }

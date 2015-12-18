@@ -170,8 +170,7 @@ public class MainActivity extends AppCompatActivity
                 public void onReceive(Context context, Intent intent) {
                     SharedPreferences sp =  PreferenceManager.getDefaultSharedPreferences(context);
                     boolean sentToken = sp.getBoolean(Config.SENT_TOKEN_TO_SERVER, false);
-                    boolean centralized = sp.getBoolean(Config.SHARED_PREFS_CENTRALIZED_ACTIVE, false);
-                    if(centralized && !sentToken){
+                    if(!sentToken){
                         String text = getString(R.string.restart_with_internet);
                         Toast t = Toast.makeText(getApplicationContext(), text, Toast.LENGTH_LONG);
                         t.show();
@@ -223,11 +222,7 @@ public class MainActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.on_off_mode) {
-            Intent intent = new Intent(this, On_OffMode.class);
-            startActivity(intent);
-
-        } else if (id == R.id.personal_message) {
+        if (id == R.id.personal_message) {
             Intent intent = new Intent(this, CustomMessage.class);
             startActivity(intent);
 
@@ -242,11 +237,10 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void showSimplePopUp() {
-
         AlertDialog.Builder helpBuilder = new AlertDialog.Builder(this);
-        helpBuilder.setTitle("Set alarm?");
+        helpBuilder.setTitle(getString(R.string.really_start_alarm));
 
-        helpBuilder.setNeutralButton("Cancel",
+        helpBuilder.setNeutralButton(getString(R.string.cancel),
                 new DialogInterface.OnClickListener() {
 
                     public void onClick(DialogInterface dialog, int which) {
@@ -255,7 +249,7 @@ public class MainActivity extends AppCompatActivity
                 }
         );
 
-        helpBuilder.setPositiveButton("Yes",
+        helpBuilder.setPositiveButton(getString(R.string.yes),
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         openMap();
@@ -271,9 +265,5 @@ public class MainActivity extends AppCompatActivity
     public void openMap(){
         Intent intent = new Intent(this, HelpRequest.class);
         startActivity(intent);
-    }
-
-    public void customMessageClick(View v){
-
     }
 }

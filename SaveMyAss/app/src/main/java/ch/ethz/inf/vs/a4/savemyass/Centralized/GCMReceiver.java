@@ -1,9 +1,7 @@
 package ch.ethz.inf.vs.a4.savemyass.Centralized;
 
-import android.content.SharedPreferences;
 import android.location.Location;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.util.Log;
 
@@ -56,9 +54,8 @@ public class GCMReceiver extends GcmListenerService {
 
             // start the watchdog
             String myUserID = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
-            SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
             if (myUserID != null) {
-                if (sp.getBoolean(Config.SHARED_PREFS_CENTRALIZED_ACTIVE, true) && !infoBundle.userID.equals(myUserID))
+                if (!infoBundle.userID.equals(myUserID))
                     new OnGoingAlarmWatchdog(getApplicationContext(), firebaseUrl, infoBundle);
             }
         }

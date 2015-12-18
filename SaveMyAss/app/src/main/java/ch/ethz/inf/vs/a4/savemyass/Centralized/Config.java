@@ -23,8 +23,6 @@ public class Config {
     public static String SHARED_PREFS_SALT = "gcm_salt";
     public static String SHARED_PREFS_FIREBASE_AUTH = "firebase_auth";
     public static String SHARED_PREFS_USER_MESSAGE = "user_message";
-    public static String SHARED_PREFS_CENTRALIZED_ACTIVE = "centralized_active";
-    public static String SHARED_PREFS_P2P_ACTIVE = "p2p_active";
     public static String SHARED_PREFS_FIRSTOPEN = "firstopen";
     public static String SHARED_PREFS_ALARM_ACTIVE = "alarm_active";
 
@@ -36,6 +34,8 @@ public class Config {
     // time and distance thresholds
     public static int LOCATION_TRACKER_UPDATE_PERIOD = 60*1000; //in ms -> maximum time between two location updates
     public static int LOCATION_TRACKER_UPDATE_PERIOD_MIN = 30*1000; //in ms -> we won't get more location updates than that
+    public static int ALARM_LOCATION_UPDATE_PERIOD = 10*1000; //in ms -> maximum time between two location updates
+    public static int ALARM_LOCATION_UPDATE_PERIOD_MIN = 5*1000; //in ms -> we won't get more location updates than that
     public static float LOCATION_TRACKER_SEND_DISTANCE_THRESHOLD = 100; //in m -> we don't update the location in firebase if the delta is smaller than this.
     public static int ALARM_DISTANCE_THRESHOLD = 5; //in km - the distance to the PIN in which the watchdog might consider triggering an alarm
     public static int IGNORE_OTHER_LOCATION_THRESHOLD = 10 * 1000; // in ms

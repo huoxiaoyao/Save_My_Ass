@@ -153,8 +153,8 @@ public class HelpOthers extends AppCompatActivity implements OnMapReadyCallback,
     // creates location request
     private LocationRequest createLocationRequest() {
         LocationRequest mLocationRequest = new LocationRequest();
-        mLocationRequest.setInterval(Config.LOCATION_TRACKER_UPDATE_PERIOD);
-        mLocationRequest.setFastestInterval(Config.LOCATION_TRACKER_UPDATE_PERIOD_MIN);
+        mLocationRequest.setInterval(Config.ALARM_LOCATION_UPDATE_PERIOD);
+        mLocationRequest.setFastestInterval(Config.ALARM_LOCATION_UPDATE_PERIOD_MIN);
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
         return mLocationRequest;
     }

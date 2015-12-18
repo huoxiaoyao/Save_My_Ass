@@ -93,7 +93,7 @@ public class OnGoingAlarmPIN extends OnGoingAlarm implements AlarmCancelReceiver
     @Override
     public void onLocationUpdate(Location loc) {
         Firebase firebaseRef = new Firebase(firebaseURL);
-        GeoFire geoFire = new GeoFire(firebaseRef.getParent().child("pin/location"));
+        GeoFire geoFire = new GeoFire(firebaseRef.getParent().child("pin"));
         GeoLocation geoLoc = new GeoLocation(loc.getLatitude(), loc.getLongitude());
         geoFire.setLocation("location", geoLoc);
     }
